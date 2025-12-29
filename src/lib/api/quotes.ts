@@ -1,6 +1,5 @@
 import { formatUnits } from 'viem';
 import { 
-  THETANUTS_API_URL, 
   ASSET_NAMES, 
   PRICE_DECIMALS, 
   STRIKE_DECIMALS 
@@ -13,7 +12,8 @@ import type { Option, ThetanutsApiResponse } from '@/types';
  */
 export async function fetchThetanutsQuotes(): Promise<Option[]> {
   try {
-    const response = await fetch(THETANUTS_API_URL);
+    // Use internal proxy to avoid CORS
+    const response = await fetch('/api/quotes');
     if (!response.ok) {
       throw new Error(`API call failed: ${response.statusText}`);
     }
