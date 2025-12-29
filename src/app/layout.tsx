@@ -1,4 +1,5 @@
 import { Inter, Press_Start_2P } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/context/Providers'
 import '@/styles/globals.css'
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
         </Providers>
+        <Analytics />
       </body>
     </html>
   )

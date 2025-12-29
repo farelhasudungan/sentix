@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.12",
+    "@vercel/analytics": "^1.6.1",
     "@walletconnect/ethereum-provider": "~2.21.1",
     "@walletconnect/modal": "^2.7.0",
     "lucide-react": "^0.562.0",
