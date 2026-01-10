@@ -6,8 +6,6 @@
   --pixel-yellow: #fbbf24;
   --pixel-green: #22c55e;
   --pixel-blue: #3b82f6;
-  --pixel-pink: #ec4899;
-  --pixel-purple: #a855f7;
   --pixel-red: #ef4444;
 }
 
@@ -96,8 +94,8 @@ body {
 }
 
 .pixel-bubble-ai {
-  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-  border: 4px solid #7e22ce;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 4px solid #1d4ed8;
   box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
 }
 
@@ -112,12 +110,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #a855f7;
-  border: 2px solid #7e22ce;
+  background: #fbbf24;
+  border: 2px solid #d97706;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9333ea;
+  background: #f59e0b;
 }
 
 /* Input Pixel Style */
@@ -128,6 +126,6 @@ body {
 }
 
 .pixel-input:focus {
-  border-color: #a855f7;
+  border-color: #3b82f6;
   outline: none;
 }

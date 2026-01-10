@@ -1,6 +1,7 @@
 'use client'
 
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, useConfig } from 'wagmi'
+import { waitForTransactionReceipt } from 'wagmi/actions'
 import { OPTION_BOOK_ABI, ERC20_ABI } from '@/lib/contracts/abi'
 import { triggerSync } from '@/lib/api/positions'
 import { useWalletModal } from '@/context/WalletModalContext'
@@ -8,6 +9,7 @@ import { REFERRER_ADDRESS, USDC_ADDRESS, BASE_CHAIN_ID } from '@/lib/constants'
 import type { Option } from '@/types'
 
 export function useThetanutsTrade() {
+  const config = useConfig()
   const { isConnected, address, chainId } = useAccount()
   const { openWalletModal } = useWalletModal()
   const { writeContractAsync, isPending, data: hash } = useWriteContract()
@@ -32,13 +34,13 @@ export function useThetanutsTrade() {
     return true
   }
 
-  // Request USDC approval
-  const requestApproval = async (spender: `0x${string}`, amount: bigint): Promise<boolean> => {
-    if (!address) return false
+  // Request USDC approval and wait for confirmation
+  const requestApproval = async (spender: `0x${string}`, amount: bigint): Promise<`0x${string}` | null> => {
+    if (!address) return null
 
     try {
       console.log('Requesting USDC approval for amount:', amount.toString())
-      await writeContractAsync({
+      const hash = await writeContractAsync({
         chainId: BASE_CHAIN_ID,
         address: USDC_ADDRESS as `0x${string}`,
         abi: ERC20_ABI,
@@ -46,11 +48,11 @@ export function useThetanutsTrade() {
         args: [spender, amount],
       })
 
-      console.log('Approval transaction submitted')
-      return true
+      console.log('Approval transaction submitted:', hash)
+      return hash
     } catch (error) {
       console.error('Approval failed:', error)
-      return false
+      return null
     }
   }
 
@@ -79,14 +81,34 @@ export function useThetanutsTrade() {
     
     // Calculate numContracts
     const pricePerContract = BigInt(currentOption.raw.order.price);
-    const numContractsBigInt = (amountInUsdcUnits * BigInt(1e18)) / pricePerContract;
+    let numContractsBigInt = (amountInUsdcUnits * BigInt(1e8)) / pricePerContract;
+    
+    // Cap numContracts to not exceed maxCollateralUsable from the order
+    const maxCollateralUsable = BigInt(currentOption.raw.order.maxCollateralUsable);
+    if (numContractsBigInt > maxCollateralUsable) {
+      console.warn(`Capping numContracts from ${numContractsBigInt.toString()} to ${maxCollateralUsable.toString()}`);
+      numContractsBigInt = maxCollateralUsable;
+    }
 
     const optionBookAddress = currentOption.raw.optionBookAddress as `0x${string}`;
 
     // Request USDC approval before trade
-    const approved = await requestApproval(optionBookAddress, amountInUsdcUnits);
-    if (!approved) {
+    const approvalHash = await requestApproval(optionBookAddress, amountInUsdcUnits);
+    if (!approvalHash) {
       return { status: 'error', error: 'Failed to approve USDC' };
+    }
+
+    // Wait for approval transaction to be confirmed before sending trade
+    console.log('Waiting for approval confirmation...');
+    try {
+      await waitForTransactionReceipt(config, { 
+        hash: approvalHash,
+        confirmations: 1,
+      });
+      console.log('Approval confirmed!');
+    } catch (error) {
+      console.error('Approval confirmation failed:', error);
+      return { status: 'error', error: 'Approval transaction failed' };
     }
 
     const orderArgs = {

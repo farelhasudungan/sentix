@@ -1,260 +1,417 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Link from 'next/link'
-import { ChevronRight, Menu, X } from 'lucide-react'
+import { ChevronRight, Users, Trophy, Sparkles, Zap, Target, Crown } from 'lucide-react'
 
 const Homepage = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  const features = [
+    {
+      title: 'Swipe to Trade',
+      description: 'Swipe right to buy options, left to pass. Trading has never been this fun!',
+      icon: '👆',
+      color: 'from-green-500/20 to-emerald-500/10',
+      borderColor: 'border-green-500/30',
+    },
+    {
+      title: 'AI Trading Buddy',
+      description: 'Your personal AI explains options in simple terms. No jargon!',
+      icon: '🤖',
+      color: 'from-blue-500/20 to-cyan-500/10',
+      borderColor: 'border-blue-500/30',
+    },
+    {
+      title: 'Tournaments',
+      description: 'Compete with other traders and win real prizes!',
+      icon: '🏆',
+      color: 'from-amber-500/20 to-yellow-500/10',
+      borderColor: 'border-amber-500/30',
+    },
+    {
+      title: 'Track & Earn',
+      description: 'Monitor your trades with beautiful P&L tracking.',
+      icon: '📊',
+      color: 'from-purple-500/20 to-pink-500/10',
+      borderColor: 'border-purple-500/30',
+    },
+  ]
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const stats = [
+    { label: 'Active Players', value: '10K+', icon: Users },
+    { label: 'Total Trades', value: '50K+', icon: Target },
+    { label: 'Prize Pool', value: '$25K', icon: Trophy },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-200 via-sky-100 to-green-200 text-gray-800">
+    <div className="min-h-screen text-white overflow-x-hidden" style={{ background: '#141414' }}>
+      {/* Animated Clouds Background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-20 left-[10%] w-64 h-32 opacity-5 animate-pulse" style={{ background: 'radial-gradient(ellipse, rgba(251,191,36,0.3), transparent 70%)', animation: 'float 20s ease-in-out infinite' }} />
+        <div className="absolute top-40 right-[5%] w-48 h-24 opacity-5" style={{ background: 'radial-gradient(ellipse, rgba(251,191,36,0.2), transparent 70%)', animation: 'float 25s ease-in-out infinite reverse' }} />
+        <div className="absolute bottom-40 left-[20%] w-56 h-28 opacity-5" style={{ background: 'radial-gradient(ellipse, rgba(251,191,36,0.25), transparent 70%)', animation: 'float 22s ease-in-out infinite' }} />
+      </div>
+
       {/* Navigation */}
-      <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-yellow-100/95 backdrop-blur-sm border-b-4 border-yellow-400' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
+      <nav className="fixed w-full top-0 z-50 px-6 py-6">
+        <div className="relative max-w-6xl mx-auto rounded-full px-6 py-4 overflow-hidden" style={{ boxShadow: '0 6px 6px rgba(0,0,0,0.2), 0 0 20px rgba(0,0,0,0.1)' }}>
+          <div className="absolute inset-0 backdrop-blur-xl bg-white/5" style={{ borderRadius: 'inherit' }} />
+          <div className="absolute inset-0 bg-white/10" style={{ borderRadius: 'inherit' }} />
+          <div className="absolute inset-0 overflow-hidden" style={{ boxShadow: 'inset 2px 2px 1px 0 rgba(255,255,255,0.3), inset -1px -1px 1px 1px rgba(255,255,255,0.2)', borderRadius: 'inherit' }} />
+          
+          <div className="relative z-10 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-yellow-400 border-4 border-yellow-600 flex items-center justify-center" style={{imageRendering: 'pixelated'}}>
-                <span className="text-2xl">⭐</span>
+              <div className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)' }}>
+                <span className="text-base">⭐</span>
               </div>
-              <span className="pixel-font text-lg text-purple-700">Optixel</span>
+              <span className="font-semibold text-lg text-white pixel-font">Sentix</span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#features" className="pixel-font text-xs hover:text-purple-600 transition-colors">Features</a>
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#features" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>Games</a>
+              <a href="#how-it-works" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>Leaderboard</a>
+              
               <Link href="/trade">
-                <button className="pixel-font text-xs bg-green-400 hover:bg-green-500 text-white px-6 py-3 border-b-4 border-green-600 hover:border-green-700 active:border-b-0 active:mt-1 transition-all">
-                  PLAY NOW!
-                </button>
+                <div className="pixel-button-gold">
+                  <span className="pixel-button-label">Play Now</span>
+                </div>
               </Link>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button 
-              className="md:hidden text-gray-800"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <Link href="/trade" className="md:hidden">
+              <div className="pixel-button-gold-sm">
+                <span className="pixel-button-label text-sm">Play</span>
+              </div>
+            </Link>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-yellow-100 border-t-4 border-yellow-400">
-            <div className="px-4 py-6 space-y-4">
-              <a href="#features" className="pixel-font text-xs block py-2 hover:text-purple-600">Features</a>
-              <Link href="/trade">
-                <button className="pixel-font text-xs w-full bg-green-400 text-white px-6 py-3 border-b-4 border-green-600">
-                  PLAY NOW!
-                </button>
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        {/* Pixel Art Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Pixel Clouds */}
-          <div className="absolute top-20 left-10 w-24 h-12 bg-white rounded-lg opacity-80 float-animation" style={{boxShadow: '8px 8px 0 rgba(200,200,200,0.5)'}}></div>
-          <div className="absolute top-32 right-20 w-32 h-16 bg-white rounded-lg opacity-80 float-animation" style={{animationDelay: '1s', boxShadow: '8px 8px 0 rgba(200,200,200,0.5)'}}></div>
-          <div className="absolute top-48 left-1/3 w-20 h-10 bg-white rounded-lg opacity-80 float-animation" style={{animationDelay: '2s', boxShadow: '8px 8px 0 rgba(200,200,200,0.5)'}}></div>
-          
-          {/* Pixel Sun */}
-          <div className="absolute top-16 right-16 w-20 h-20 bg-yellow-300 border-4 border-yellow-500" style={{
-            clipPath: 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)',
-            boxShadow: '0 0 60px rgba(255,200,0,0.5)'
-          }}></div>
-          
-          {/* Pixel Stars (scattered) */}
-          <div className="absolute top-28 left-1/4 text-3xl bounce-pixel" style={{animationDelay: '0.1s'}}>⭐</div>
-          <div className="absolute top-40 right-1/3 text-2xl bounce-pixel" style={{animationDelay: '0.3s'}}>✨</div>
-          <div className="absolute top-60 left-1/2 text-3xl bounce-pixel" style={{animationDelay: '0.5s'}}>💫</div>
-          
-          {/* Pixel Ground/Grass at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-green-400 to-green-300" style={{
-            backgroundImage: 'repeating-linear-gradient(90deg, #4ade80 0px, #4ade80 20px, #22c55e 20px, #22c55e 40px)'
-          }}></div>
-          
-          {/* Pixel Trees */}
-          <div className="absolute bottom-20 left-10 flex flex-col items-center">
-            <div className="w-0 h-0 border-l-[30px] border-r-[30px] border-b-[40px] border-l-transparent border-r-transparent border-b-green-600"></div>
-            <div className="w-4 h-8 bg-amber-700"></div>
-          </div>
-          <div className="absolute bottom-24 right-16 flex flex-col items-center">
-            <div className="w-0 h-0 border-l-[40px] border-r-[40px] border-b-[50px] border-l-transparent border-r-transparent border-b-green-600"></div>
-            <div className="w-5 h-10 bg-amber-700"></div>
-          </div>
-          
-          {/* Floating Coins */}
-          <div className="absolute top-1/3 left-20 text-4xl float-animation" style={{animationDelay: '0.5s'}}>🪙</div>
-          <div className="absolute top-1/4 right-24 text-3xl float-animation" style={{animationDelay: '1.5s'}}>🪙</div>
-          <div className="absolute top-2/3 left-1/4 text-2xl float-animation" style={{animationDelay: '2.5s'}}>💎</div>
-        </div>
-
-        {/* Main Hero Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Pixel Game-Style Badge */}
-          <div className="inline-block mb-8 px-6 py-3 bg-yellow-300 border-4 border-yellow-500 transform -rotate-2">
-            <span className="pixel-font text-xs text-yellow-800">NEW GAME AVAILABLE!</span>
+      {/* Hero Section with Pixel Art Style */}
+      <section className="relative min-h-screen flex items-center justify-center pt-32 pb-20 px-4">
+        {/* Gradient Glow */}
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(251,191,36,0.1) 0%, transparent 50%)' }} />
+        
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          {/* Pixel Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full" style={{ background: 'rgba(251,191,36,0.1)', border: '2px solid rgba(251,191,36,0.3)' }}>
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span className="text-amber-400 text-sm font-semibold">A New Type of Trading Game</span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="pixel-font text-3xl md:text-4xl lg:text-5xl mb-8 leading-relaxed text-purple-800 drop-shadow-lg">
-            OPTIONS TRADING
-            <br />
-            <span className="text-pink-500">MADE FUN & EASY!</span>
+          {/* Main Heading with Pixel Style Shadow */}
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <span className="block" style={{ 
+              background: 'linear-gradient(to bottom, #ffffff, #d4d4d4)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 4px 0 rgba(0,0,0,0.3)'
+            }}>
+              Swipe. Trade.
+            </span>
+            <span className="block" style={{ 
+              background: 'linear-gradient(to bottom, #fbbf24, #f59e0b)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>
+              Win Big!
+            </span>
           </h1>
 
-          {/* Subheadline */}
-          <div className="bg-white/80 backdrop-blur-sm border-4 border-gray-300 p-6 mb-8 max-w-2xl mx-auto" style={{boxShadow: '8px 8px 0 rgba(0,0,0,0.1)'}}>
-            <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-              Forget boring charts! <span className="text-purple-600 font-bold">Swipe left or right</span> to trade options like a game. 
-              Our <span className="text-pink-600 font-bold">AI buddy</span> helps you learn, compete in <span className="text-green-600 font-bold">tournaments</span>, and win prizes!
-            </p>
-          </div>
+          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+            Make your home in a world of unlimited trading adventure. 
+            Master options and compete with friends. Build your portfolio.
+          </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          {/* CTA Buttons with Pixel Style */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
             <Link href="/trade">
-              <button className="group pixel-font text-sm bg-green-500 hover:bg-green-400 text-white px-10 py-5 border-b-8 border-green-700 hover:border-green-600 active:border-b-0 active:mt-2 transition-all transform hover:scale-105" style={{boxShadow: '4px 4px 0 rgba(0,0,0,0.3)'}}>
-                <span className="flex items-center gap-3">
-                  START PLAYING
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <div className="pixel-button-gold-lg">
+                <span className="pixel-button-label flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  PLAY FOR FREE
                 </span>
-              </button>
+              </div>
             </Link>
-            <a href="/trade/games">
-              <button className="pixel-font text-sm bg-purple-500 hover:bg-purple-400 text-white px-8 py-5 border-b-8 border-purple-700 hover:border-purple-600 active:border-b-0 active:mt-2 transition-all" style={{boxShadow: '4px 4px 0 rgba(0,0,0,0.3)'}}>
-                <span className="flex items-center gap-2">
-                  TOURNAMENTS
-                </span>
-              </button>
-            </a>
+            <Link href="/trade/games">
+              <div className="pixel-button-outline">
+                <span className="pixel-button-label-outline">TOURNAMENTS</span>
+              </div>
+            </Link>
+            <Link href="/trade/agent">
+              <div className="pixel-button-outline">
+                <span className="pixel-button-label-outline">AI BUDDY</span>
+              </div>
+            </Link>
           </div>
 
-          {/* Feature Pills - Pixel Style */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8">
-            <span className="pixel-font text-[8px] px-3 py-2 bg-pink-200 border-2 border-pink-400 text-pink-800">SWIPE TRADE</span>
-            <span className="pixel-font text-[8px] px-3 py-2 bg-blue-200 border-2 border-blue-400 text-blue-800">AI HELPER</span>
-            <span className="pixel-font text-[8px] px-3 py-2 bg-yellow-200 border-2 border-yellow-400 text-yellow-800">COMPETE</span>
-            <span className="pixel-font text-[8px] px-3 py-2 bg-green-200 border-2 border-green-400 text-green-800">MINI GAMES</span>
-            <span className="pixel-font text-[8px] px-3 py-2 bg-purple-200 border-2 border-purple-400 text-purple-800">WIN PRIZES</span>
+          {/* Stats Row */}
+          <div className="flex items-center justify-center gap-8 md:gap-16">
+            {stats.map((stat, idx) => (
+              <div key={idx} className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <stat.icon className="w-5 h-5 text-amber-400" />
+                  <span className="text-2xl md:text-3xl font-bold text-white">{stat.value}</span>
+                </div>
+                <span className="text-xs text-gray-500 uppercase tracking-wide">{stat.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 bg-gradient-to-b from-green-200 via-yellow-100 to-sky-100">
+      {/* Ticker Banner */}
+      <div className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)' }}>
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(10)].map((_, i) => (
+            <span key={i} className="mx-8 text-black font-bold text-sm flex items-center gap-2">
+              ⭐ Welcome to Sentix • Trade Options Like a Game • Join Tournaments • Win Prizes
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Features Section with Pixel Cards */}
+      <section id="features" className="py-24 px-4 relative">
         <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
           <div className="text-center mb-16">
-            <div className="inline-block px-6 py-3 bg-purple-400 border-4 border-purple-600 mb-6" style={{boxShadow: '4px 4px 0 rgba(0,0,0,0.2)'}}>
-              <span className="pixel-font text-sm text-white">FEATURES</span>
-            </div>
-            <h2 className="pixel-font text-2xl md:text-3xl text-purple-800 mb-4">
-              HOW IT WORKS
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              <span style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Where Trading
+              </span>
+              <br />
+              <span className="text-white">Comes to Life</span>
             </h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
-              Trading options has never been this fun! Here&apos;s what makes Optixel special.
+            <p className="text-gray-400 max-w-xl mx-auto">
+              Sentix is building a platform where users can trade options in a fun, gamified experience.
             </p>
           </div>
 
-          {/* Feature Cards */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Swipe Trade Card */}
-            <div className="bg-white border-4 border-pink-400 p-6 transform hover:-translate-y-2 transition-transform" style={{boxShadow: '8px 8px 0 rgba(236,72,153,0.3)'}}>
-              <div className="w-16 h-16 bg-pink-400 border-4 border-pink-600 flex items-center justify-center mb-4 mx-auto">
-                <span className="text-3xl">👆</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, idx) => (
+              <div 
+                key={idx}
+                className={`relative p-6 rounded-2xl border ${feature.borderColor} transition-all hover:-translate-y-2 hover:shadow-xl`}
+                style={{ background: 'rgba(26,26,26,0.8)' }}
+              >
+                <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-3xl mb-4 bg-gradient-to-br ${feature.color} border ${feature.borderColor}`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-400">{feature.description}</p>
               </div>
-              <h3 className="pixel-font text-sm text-pink-600 text-center mb-4">SWIPE TRADE</h3>
-              <p className="text-gray-600 text-center leading-relaxed">
-                Forget complex order books! Simply <strong>swipe right to buy</strong> or <strong>swipe left to pass</strong>. 
-                It&apos;s like Tinder, but for options trading!
-              </p>
-              <div className="mt-6 flex justify-center gap-2">
-                <span className="px-2 py-1 bg-pink-100 border-2 border-pink-300 text-pink-600 text-xs">EASY</span>
-                <span className="px-2 py-1 bg-pink-100 border-2 border-pink-300 text-pink-600 text-xs">FUN</span>
-              </div>
-            </div>
-
-            {/* AI Helper Card */}
-            <div className="bg-white border-4 border-blue-400 p-6 transform hover:-translate-y-2 transition-transform" style={{boxShadow: '8px 8px 0 rgba(59,130,246,0.3)'}}>
-              <div className="w-16 h-16 bg-blue-400 border-4 border-blue-600 flex items-center justify-center mb-4 mx-auto">
-                <span className="text-3xl">🤖</span>
-              </div>
-              <h3 className="pixel-font text-sm text-blue-600 text-center mb-4">AI HELPER</h3>
-              <p className="text-gray-600 text-center leading-relaxed">
-                Your personal AI buddy explains options in <strong>simple language</strong>. 
-                Ask anything - no question is too basic! Learn as you play.
-              </p>
-              <div className="mt-6 flex justify-center gap-2">
-                <span className="px-2 py-1 bg-blue-100 border-2 border-blue-300 text-blue-600 text-xs">SMART</span>
-                <span className="px-2 py-1 bg-blue-100 border-2 border-blue-300 text-blue-600 text-xs">24/7</span>
-              </div>
-            </div>
-
-            {/* Tournaments Card */}
-            <div className="bg-white border-4 border-yellow-400 p-6 transform hover:-translate-y-2 transition-transform" style={{boxShadow: '8px 8px 0 rgba(234,179,8,0.3)'}}>
-              <div className="w-16 h-16 bg-yellow-400 border-4 border-yellow-600 flex items-center justify-center mb-4 mx-auto">
-                <span className="text-3xl">🏆</span>
-              </div>
-              <h3 className="pixel-font text-sm text-yellow-600 text-center mb-4">TOURNAMENTS</h3>
-              <p className="text-gray-600 text-center leading-relaxed">
-                Compete with other players in <strong>weekly tournaments</strong>! 
-                Climb the leaderboard and win real prizes. May the best trader win!
-              </p>
-              <div className="mt-6 flex justify-center gap-2">
-                <span className="px-2 py-1 bg-yellow-100 border-2 border-yellow-300 text-yellow-600 text-xs">WEEKLY</span>
-                <span className="px-2 py-1 bg-yellow-100 border-2 border-yellow-300 text-yellow-600 text-xs">PRIZES</span>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Bottom CTA */}
-          <div className="text-center mt-16">
+          <div className="text-center mt-12">
             <Link href="/trade">
-              <button className="pixel-font text-xs bg-green-500 hover:bg-green-400 text-white px-8 py-4 border-b-4 border-green-700 hover:border-green-600 active:border-b-0 active:mt-1 transition-all" style={{boxShadow: '4px 4px 0 rgba(0,0,0,0.2)'}}>
-                TRY IT NOW - IT&apos;S FREE!
-              </button>
+              <div className="pixel-button-gold inline-block">
+                <span className="pixel-button-label">Start Trading</span>
+              </div>
             </Link>
           </div>
         </div>
       </section>
+
+      {/* How It Works with Pixel Style */}
+      <section id="how-it-works" className="py-24 px-4" style={{ background: 'linear-gradient(to bottom, rgba(251,191,36,0.05), transparent)' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              Play With Friends
+            </h2>
+            <p className="text-gray-400">
+              Co-operation makes the world go round. Collaborate or compete!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { step: '1', title: 'Connect Wallet', desc: 'Link your crypto wallet to start trading', color: 'bg-green-500' },
+              { step: '2', title: 'Swipe Options', desc: 'Browse and swipe to place your trades', color: 'bg-blue-500' },
+              { step: '3', title: 'Win Rewards', desc: 'Earn profits and climb the leaderboard', color: 'bg-amber-500' },
+            ].map((item, idx) => (
+              <div key={idx} className="text-center">
+                <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4`} style={{ boxShadow: '0 4px 0 rgba(0,0,0,0.3)' }}>
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-gray-400 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Roadmap / Updates Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(168,85,247,0.2), rgba(168,85,247,0.05))', border: '2px solid rgba(168,85,247,0.3)' }}>
+              <h3 className="text-xl font-bold text-white mb-2">10K+ Players</h3>
+              <div className="text-4xl mb-3">👥</div>
+              <p className="text-sm text-gray-400">Join one of the largest trading game communities!</p>
+            </div>
+            <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(59,130,246,0.2), rgba(59,130,246,0.05))', border: '2px solid rgba(59,130,246,0.3)' }}>
+              <h3 className="text-xl font-bold text-white mb-2">Weekly Tournaments</h3>
+              <div className="text-4xl mb-3">🏆</div>
+              <p className="text-sm text-gray-400">Compete every week for amazing prizes!</p>
+            </div>
+            <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(236,72,153,0.2), rgba(236,72,153,0.05))', border: '2px solid rgba(236,72,153,0.3)' }}>
+              <h3 className="text-xl font-bold text-white mb-2">Daily Updates</h3>
+              <div className="text-4xl mb-3">🚀</div>
+              <p className="text-sm text-gray-400">New features and markets added regularly!</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-3xl p-8 md:p-12 text-center relative overflow-hidden" style={{ background: 'linear-gradient(to bottom, rgba(251,191,36,0.15), rgba(251,191,36,0.05))', border: '2px solid rgba(251,191,36,0.3)' }}>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] blur-3xl" style={{ background: 'linear-gradient(to bottom, rgba(251,191,36,0.3), transparent)' }} />
+            
+            <div className="relative z-10">
+              <div className="text-6xl mb-6">🎮</div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Ready to Start Trading?</h2>
+              <p className="text-gray-400 mb-8 max-w-lg mx-auto">
+                Join thousands of traders who are already using Sentix to trade options the fun way.
+              </p>
+              <Link href="/trade">
+                <div className="pixel-button-gold-lg inline-block">
+                  <span className="pixel-button-label">PLAY FOR FREE</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ticker Banner */}
+      <div className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)' }}>
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(10)].map((_, i) => (
+            <span key={i} className="mx-8 text-black font-bold text-sm flex items-center gap-2">
+              ⭐ Powered by Thetanuts Finance • Trade with Confidence • Learn with AI • Compete to Win
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-purple-800 border-t-4 border-purple-600 py-8 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-yellow-400 border-2 border-yellow-600 flex items-center justify-center">
-              <span className="text-sm">⭐</span>
+      <footer className="py-16 px-4" style={{ background: 'rgba(20,20,20,0.9)' }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)' }}>
+                <span className="text-lg">⭐</span>
+              </div>
+              <span className="font-bold text-xl text-white">Sentix</span>
             </div>
-            <span className="pixel-font text-xs text-white">OPTIXEL</span>
+            
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              <a href="#" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">WHITEPAPER</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">DISCORD</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">TWITTER</a>
+              <a href="#" className="text-gray-400 hover:text-white text-sm font-medium transition-colors">HELP CENTER</a>
+            </div>
           </div>
-          <p className="text-purple-200 text-sm mb-2">
-            Built with ❤️ and powered by <strong className="text-yellow-300">Thetanuts Finance</strong>
-          </p>
-          <p className="pixel-font text-[8px] text-purple-300">
-            © 2025 OPTIXEL - MAKING OPTIONS TRADING FUN!
-          </p>
+          
+          <div className="text-center border-t border-white/10 pt-8">
+            <p className="text-gray-500 text-sm mb-2">
+              Built with ❤️ and powered by <span className="text-amber-400 font-semibold">Thetanuts Finance</span>
+            </p>
+            <p className="text-gray-600 text-xs">
+              © 2025 Sentix. All Rights Reserved.
+            </p>
+          </div>
         </div>
       </footer>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-20px) translateX(10px); }
+        }
+        
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+        
+        .pixel-button-gold {
+          position: relative;
+          padding: 12px 24px;
+          background: linear-gradient(to bottom, #ffd48d, #b78751);
+          border-radius: 12px;
+          box-shadow: 0 4px 0 #8b6914, 0 6px 20px rgba(251,191,36,0.3);
+          cursor: pointer;
+          transition: all 0.1s;
+        }
+        
+        .pixel-button-gold:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 0 #8b6914, 0 8px 25px rgba(251,191,36,0.4);
+        }
+        
+        .pixel-button-gold:active {
+          transform: translateY(2px);
+          box-shadow: 0 2px 0 #8b6914, 0 4px 15px rgba(251,191,36,0.2);
+        }
+        
+        .pixel-button-gold-lg {
+          position: relative;
+          padding: 16px 32px;
+          background: linear-gradient(to bottom, #ffd48d, #b78751);
+          border-radius: 14px;
+          box-shadow: 0 6px 0 #8b6914, 0 8px 25px rgba(251,191,36,0.3);
+          cursor: pointer;
+          transition: all 0.1s;
+        }
+        
+        .pixel-button-gold-lg:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 0 #8b6914, 0 10px 30px rgba(251,191,36,0.4);
+        }
+        
+        .pixel-button-gold-sm {
+          padding: 8px 16px;
+          background: linear-gradient(to bottom, #ffd48d, #b78751);
+          border-radius: 10px;
+          box-shadow: 0 3px 0 #8b6914;
+          cursor: pointer;
+        }
+        
+        .pixel-button-label {
+          color: #1a1a1a;
+          font-weight: 700;
+          text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+        }
+        
+        .pixel-button-outline {
+          padding: 16px 32px;
+          background: transparent;
+          border: 2px solid rgba(251,191,36,0.5);
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .pixel-button-outline:hover {
+          background: rgba(251,191,36,0.1);
+          border-color: rgba(251,191,36,0.8);
+        }
+        
+        .pixel-button-label-outline {
+          color: #fbbf24;
+          font-weight: 700;
+        }
+      `}</style>
     </div>
   )
 }

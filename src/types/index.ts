@@ -21,7 +21,7 @@ export interface ThetanutsOrder {
   chainId: number;
   optionBookAddress: string;
   nonce: string;
-  greeks: {
+  greeks?: {
     delta: number;
     iv: number;
     gamma: number;
@@ -89,4 +89,5 @@ export interface UserPosition {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  recommendedTrade?: Option;
 }

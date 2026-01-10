@@ -16,11 +16,15 @@ export function FilterBar({ options, selected, onSelect }: FilterBarProps) {
           <button
             key={option}
             onClick={() => onSelect(option)}
-            className={`pixel-font text-[10px] px-3 py-2 border-2 transition-all whitespace-nowrap flex-1 ${
+            className={`text-xs font-medium px-4 py-2 rounded-lg transition-all whitespace-nowrap flex-1 ${
               selected === option
-                ? 'bg-yellow-400 text-yellow-900 border-yellow-600 shadow-[2px_2px_0_rgba(0,0,0,0.2)] transform translate-y-px'
-                : 'bg-purple-100 text-purple-600 border-purple-300 hover:bg-purple-200'
+                ? 'text-black'
+                : 'text-gray-400 hover:text-white'
             }`}
+            style={selected === option 
+              ? { background: 'linear-gradient(to right, #fbbf24, #d97706)', boxShadow: '0 4px 14px rgba(251,191,36,0.2)' }
+              : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }
+            }
           >
             {option}
           </button>

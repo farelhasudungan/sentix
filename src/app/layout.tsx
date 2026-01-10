@@ -11,11 +11,11 @@ const pressStart2P = Press_Start_2P({
 })
 
 export const metadata = {
-  title: 'Optixel - Fun Options Trading Game',
+  title: 'Sentix - Fun Options Trading Game',
   description: 'Make options trading fun and easy! Learn by playing, compete in tournaments, and win prizes.',
   keywords: 'crypto options, DeFi, trading, game, tournaments, Thetanuts',
   openGraph: {
-    title: 'Optixel - Fun Options Trading Game',
+    title: 'Sentix - Fun Options Trading Game',
     description: 'Make options trading fun and easy! Learn by playing, compete in tournaments.',
     type: 'website',
   },
