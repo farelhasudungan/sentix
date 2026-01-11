@@ -4,11 +4,6 @@ import { Providers } from '@/context/Providers'
 import '@/styles/globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
-const pressStart2P = Press_Start_2P({ 
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-pixel'
-})
 
 export const metadata = {
   title: 'Sentix - Fun Options Trading Game',
@@ -23,7 +18,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={pressStart2P.variable}>
+    <html lang="en" className={inter.className}>
       <body className={inter.className}>
         <Providers>
           {children}
