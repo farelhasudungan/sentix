@@ -199,9 +199,9 @@ export default function TradePage() {
               {/* Premium */}
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
                 <div className="text-yellow-400 text-xs mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
-                  <DollarSign className="w-3 h-3" /> Premium
+                  <DollarSign className="w-3 h-3" /> Available Premium
                 </div>
-                <div className="text-2xl font-bold text-yellow-400">{currentOption.premium} {currentOption.asset}</div>
+                <div className="text-2xl font-bold text-yellow-400">{currentOption.premium} USD</div>
               </div>
 
               {/* Investment Input */}

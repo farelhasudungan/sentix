@@ -15,8 +15,8 @@ const navItems = [
 ]
 
 const bottomNavItems = [
-  { href: '/trade/settings', label: 'Settings', icon: Settings },
-  { href: '/trade/notifications', label: 'Notifications', icon: Bell },
+  { href: '/trade#', label: 'Settings', icon: Settings },
+  { href: '/trade#', label: 'Notifications', icon: Bell },
 ]
 
 export function Sidebar() {

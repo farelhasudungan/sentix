@@ -157,26 +157,10 @@ const AIAgent = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 backdrop-blur-sm border border-white/10 rounded-2xl custom-scrollbar" style={{ background: 'rgba(26,26,26,0.5)' }}>
         {messages.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎮</div>
-            <h2 className="font-bold text-white text-lg mb-2">Welcome, Player!</h2>
+            <h2 className="font-bold text-white text-lg mb-2">Welcome!</h2>
             <p className="text-gray-400 max-w-md mx-auto">
               I&apos;m your AI buddy! Ask me anything about options trading. 
-              No confusing jargon - I&apos;ll explain everything like a game! 🕹️
             </p>
-            <div className="mt-6 flex justify-center gap-4">
-              <div className="bg-red-500/20 border border-red-500/30 px-4 py-2 text-center rounded-xl">
-                <div className="font-bold text-white">LVL 1</div>
-                <div className="text-[10px] text-red-300">Beginner</div>
-              </div>
-              <div className="bg-blue-500/20 border border-blue-500/30 px-4 py-2 text-center rounded-xl">
-                <div className="font-bold text-white">0 XP</div>
-                <div className="text-[10px] text-blue-300">Points</div>
-              </div>
-              <div className="bg-yellow-500/20 border border-yellow-500/30 px-4 py-2 text-center rounded-xl">
-                <div className="font-bold text-white">🏆 0</div>
-                <div className="text-[10px] text-yellow-300">Wins</div>
-              </div>
-            </div>
           </div>
         )}
 
