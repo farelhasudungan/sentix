@@ -67,8 +67,8 @@ const Homepage = () => {
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>Games</a>
-              <a href="#how-it-works" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>Leaderboard</a>
+              <a href="#features" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>Features</a>
+              <a href="#how-it-works" className="text-base font-semibold text-gray-300 hover:text-white transition-colors" style={{ textShadow: '1px 0 4px rgba(0,0,0,0.7)' }}>How It Works</a>
               
               <Link href="/trade">
                 <div className="pixel-button-gold">
