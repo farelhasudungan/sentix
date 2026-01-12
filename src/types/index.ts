@@ -48,6 +48,7 @@ export interface Option {
   strike: number;
   premium: number;
   expiry: string;
+  expiryTimestamp: number;
   apy: number;
   raw: ThetanutsOrder;
 }

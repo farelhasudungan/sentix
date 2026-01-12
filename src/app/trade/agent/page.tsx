@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Send, TrendingUp, Clock, Activity, Bot, Sparkles } from 'lucide-react'
 import { useChat } from '@/hooks/useChat'
+import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import Image from 'next/image'
 import type { Option } from '@/types'
 
@@ -75,7 +76,9 @@ const MiniOptionCard = ({ option }: { option: Option }) => (
       <div className="text-[10px] text-blue-400 flex items-center justify-center gap-1">
         <Clock className="w-3 h-3" /> Expiry
       </div>
-      <div className="text-sm font-semibold text-blue-300">{option.expiry}</div>
+      <div className="text-s font-semibold text-blue-300">
+        {option.expiry} <CountdownTimer expiryTimestamp={option.expiryTimestamp} />
+      </div>
     </div>
 
     <Link href={`/trade?signature=${encodeURIComponent(option.raw.signature)}`} className="block">

@@ -54,6 +54,7 @@ function parseQuotesResponse(apiData: ThetanutsApiResponse): Option[] {
       strike: strike,
       premium: premium,
       expiry: expiryDisplay,
+      expiryTimestamp: order.expiry,
       apy: parseFloat(leverage.toFixed(2)),
       raw: item,
     };

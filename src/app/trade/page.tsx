@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Clock, DollarSign, TrendingUp, Activity } from 'lucide-react'
@@ -17,6 +17,7 @@ import { fetchThetanutsQuotes } from '@/lib/api/quotes'
 import { useThetanutsTrade } from '@/hooks/useThetanutsTrade'
 import { getStrikeWidth, calculateMaxPayout, getStructureType } from '@/lib/api/payouts'
 import { FilterBar } from '@/components/ui/FilterBar'
+import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { SwipeButtons } from '@/components/features/trade/SwipeButtons'
 import type { Option } from '@/types'
 
@@ -30,7 +31,16 @@ const coinIcons: Record<string, typeof btcIcon> = {
   XRP: xrpIcon,
 }
 
+// Wrapper component with Suspense for useSearchParams
 export default function TradePage() {
+  return (
+    <Suspense fallback={<div className="text-center text-gray-400 py-12">Loading...</div>}>
+      <TradeContent />
+    </Suspense>
+  )
+}
+
+function TradeContent() {
   const searchParams = useSearchParams()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
@@ -219,7 +229,9 @@ export default function TradePage() {
                   <div className="text-gray-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
                     <Clock className="w-3 h-3" /> Expiry
                   </div>
-                  <div className="text-lg font-semibold text-white">{currentOption.expiry}</div>
+                  <div className="text-lg font-semibold text-white">
+                    {currentOption.expiry} <CountdownTimer expiryTimestamp={currentOption.expiryTimestamp} />
+                  </div>
                 </div>
                 <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
                   <div className="text-green-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
