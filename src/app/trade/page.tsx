@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Clock, DollarSign, TrendingUp, Activity } from 'lucide-react'
 
@@ -30,10 +31,14 @@ const coinIcons: Record<string, typeof btcIcon> = {
 }
 
 export default function TradePage() {
+  const searchParams = useSearchParams()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [positions, setPositions] = useState<Option[]>([])
   const [filter, setFilter] = useState('ALL')
+  
+  // Track the signature we've already navigated to
+  const navigatedSignatureRef = React.useRef<string | null>(null)
 
   // Fetch live data
   const { data: optionsData = [], isLoading, error, refetch } = useQuery({
@@ -42,12 +47,40 @@ export default function TradePage() {
     refetchInterval: 30000,
   })
 
+  // Get signature from URL
+  const signature = searchParams.get('signature')
+
   // Derived state for filtered options
   const filteredOptions = optionsData.filter(
     (option) => filter === 'ALL' || option.asset === filter
   )
 
   const currentOption = filteredOptions[currentIndex]
+
+  // Auto-navigate to specific trade when signature is in URL
+  useEffect(() => {
+    // Skip if no signature, no data, or we've already navigated to this signature
+    if (!signature || optionsData.length === 0 || navigatedSignatureRef.current === signature) {
+      return
+    }
+
+    // Find the option in all options
+    const targetOption = optionsData.find(opt => opt.raw.signature === signature)
+    if (targetOption) {
+      // Set filter to the asset of the target option
+      setFilter(targetOption.asset)
+      
+      // Find index in the filtered list (filter by asset)
+      const filteredByAsset = optionsData.filter(opt => opt.asset === targetOption.asset)
+      const targetIndex = filteredByAsset.findIndex(opt => opt.raw.signature === signature)
+      
+      if (targetIndex >= 0) {
+        setCurrentIndex(targetIndex)
+        // Mark this signature as navigated
+        navigatedSignatureRef.current = signature
+      }
+    }
+  }, [signature, optionsData])
 
   const { executeTrade, isPending, isConfirming } = useThetanutsTrade()
 
@@ -190,9 +223,9 @@ export default function TradePage() {
                 </div>
                 <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
                   <div className="text-green-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
-                    <TrendingUp className="w-3 h-3" /> APY
+                    <TrendingUp className="w-3 h-3" /> Leverage
                   </div>
-                  <div className="text-lg font-bold text-green-400">{currentOption.apy}%</div>
+                  <div className="text-lg font-bold text-green-400">{currentOption.apy}x</div>
                 </div>
               </div>
 

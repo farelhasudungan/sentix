@@ -34,7 +34,11 @@ function parseQuotesResponse(apiData: ThetanutsApiResponse): Option[] {
     const premium = parseFloat(formatUnits(BigInt(order.price), PRICE_DECIMALS));
     const strikeRaw = order.strikes[0];
     const strike = parseFloat(formatUnits(BigInt(strikeRaw), STRIKE_DECIMALS));
-    const apy = (item.greeks?.iv || 0) * 100;
+    // Calculate leverage: leverage = spot / premium
+    // Premium from API is in USDC for all options
+    const MAX_LEVERAGE = 10000;
+    const spotPrice = marketData[asset] || 0;
+    const leverage = premium > 0 ? Math.min(spotPrice / premium, MAX_LEVERAGE) : 0;
     const expiryDate = new Date(order.expiry * 1000);
     const now = new Date();
     const diffTime = Math.abs(expiryDate.getTime() - now.getTime());
@@ -50,7 +54,7 @@ function parseQuotesResponse(apiData: ThetanutsApiResponse): Option[] {
       strike: strike,
       premium: premium,
       expiry: expiryDisplay,
-      apy: parseFloat(apy.toFixed(1)),
+      apy: parseFloat(leverage.toFixed(2)),
       raw: item,
     };
   }).filter((item): item is Option => item !== null);

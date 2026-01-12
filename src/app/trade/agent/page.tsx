@@ -52,7 +52,7 @@ const MiniOptionCard = ({ option }: { option: Option }) => (
       </div>
       <div className="text-right">
         <div className="text-[10px] text-gray-500 uppercase">Premium</div>
-        <div className="text-sm font-bold text-yellow-400">{option.premium.toFixed(4)} {option.asset}</div>
+        <div className="text-sm font-bold text-yellow-400">{option.premium.toFixed(4)} USD</div>
       </div>
     </div>
 
@@ -65,9 +65,9 @@ const MiniOptionCard = ({ option }: { option: Option }) => (
       </div>
       <div className="bg-green-500/10 border border-green-500/20 p-2 text-center rounded-lg">
         <div className="text-[10px] text-green-400 flex items-center justify-center gap-1">
-          <TrendingUp className="w-3 h-3" /> APY
+          <TrendingUp className="w-3 h-3" /> Leverage
         </div>
-        <div className="text-sm font-bold text-green-400">{option.apy}%</div>
+        <div className="text-sm font-bold text-green-400">{option.apy}x</div>
       </div>
     </div>
 
@@ -78,7 +78,7 @@ const MiniOptionCard = ({ option }: { option: Option }) => (
       <div className="text-sm font-semibold text-blue-300">{option.expiry}</div>
     </div>
 
-    <Link href="/trade" className="block">
+    <Link href={`/trade?signature=${encodeURIComponent(option.raw.signature)}`} className="block">
       <button className="w-full text-sm font-semibold text-black py-3 rounded-xl transition-all" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)', boxShadow: '0 4px 14px rgba(251,191,36,0.2)' }}>
         Go to Trade
       </button>

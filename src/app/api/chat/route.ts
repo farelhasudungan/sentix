@@ -97,14 +97,11 @@ function calculatePayoutInfo(trade: Option): string {
   let potentialProfit: string;
   
   if (trade.type === 'CALL') {
-    breakEven = strike + premium;
-    const priceNeeded = breakEven;
-    const percentMove = ((priceNeeded - currentPrice) / currentPrice * 100).toFixed(1);
-    potentialProfit = `Price needs to go above $${breakEven.toLocaleString()} (+${percentMove}% from current) to profit`;
+    breakEven = strike;
+    potentialProfit = `Price needs to go above $${breakEven.toLocaleString()} to profit`;
   } else {
-    breakEven = strike - premium;
-    const percentMove = ((currentPrice - breakEven) / currentPrice * 100).toFixed(1);
-    potentialProfit = `Price needs to drop below $${breakEven.toLocaleString()} (-${percentMove}% from current) to profit`;
+    breakEven = strike;
+    potentialProfit = `Price needs to drop below $${breakEven.toLocaleString()} to profit`;
   }
   
   // Example: If you invest $10, max loss is $10

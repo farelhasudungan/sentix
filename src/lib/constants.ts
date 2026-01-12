@@ -23,4 +23,4 @@ export const DECIMALS: Record<string, number> = {
 };
 
 export const STRIKE_DECIMALS = 8; // Chainlink price feed standard
-export const PRICE_DECIMALS = 6;  // USDC decimals
+export const PRICE_DECIMALS = 8;  // USDC decimals
