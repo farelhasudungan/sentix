@@ -46,7 +46,8 @@ export interface Option {
   currentPrice: number;
   type: 'CALL' | 'PUT';
   strike: number;
-  premium: number;
+  premium: number;           // Total available premium in USD
+  pricePerContract: number;  // Price per single contract in USD
   expiry: string;
   expiryTimestamp: number;
   apy: number;

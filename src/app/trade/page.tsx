@@ -94,8 +94,18 @@ function TradeContent() {
 
   const { executeTrade, isPending, isConfirming } = useThetanutsTrade()
 
-  // Investment amount state
-  const [investmentAmount, setInvestmentAmount] = useState<string>('10')
+  // Investment amount state - will be set based on available premium
+  const [investmentAmount, setInvestmentAmount] = useState<string>('')
+
+  // Set smart default investment amount when currentOption changes
+  useEffect(() => {
+    if (currentOption) {
+      // Default to min of $10 or available premium, rounded down to USDC precision
+      const rawDefault = Math.min(10, currentOption.premium);
+      const smartDefault = (Math.floor(rawDefault * 1e6) / 1e6).toString();
+      setInvestmentAmount(smartDefault)
+    }
+  }, [currentOption?.raw.signature])
 
   // Format currency
   const formatMoney = (value: number) => {
@@ -241,12 +251,11 @@ function TradeContent() {
                 </div>
               </div>
 
-              {/* Premium */}
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
                 <div className="text-yellow-400 text-xs mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
                   <DollarSign className="w-3 h-3" /> Available Premium
                 </div>
-                <div className="text-2xl font-bold text-yellow-400">{currentOption.premium} USD</div>
+                <div className="text-2xl font-bold text-yellow-400">{currentOption.premium.toFixed(6)} USD</div>
               </div>
 
               {/* Investment Input */}
@@ -261,24 +270,31 @@ function TradeContent() {
                      value={investmentAmount}
                      onChange={(e) => {
                        const val = e.target.value;
-                       if (val === '' || parseFloat(val) >= 0 ) {
-                         setInvestmentAmount(val);
+                       if (val === '' || parseFloat(val) >= 0) {
+                         // Round down to 6 decimal places (USDC precision)
+                         const rounded = Math.floor(parseFloat(val) * 1e6) / 1e6;
+                         setInvestmentAmount(isNaN(rounded) ? '' : rounded.toString());
                        }
                      }}
                      className="text-xl font-bold w-24 text-center bg-transparent border-b-2 border-yellow-500/50 focus:outline-none focus:border-yellow-400 text-white"
                    />
                  </div>
                  {parseFloat(investmentAmount) <= 0 && investmentAmount !== '' && (
-                   <div className="text-[10px] text-red-400 mt-1">Amount must be greater than 0</div>
-                 )}
-                 <div className="text-[10px] text-gray-500 mt-1">
-                   ≈ {((parseFloat(investmentAmount) || 0) / currentOption.premium).toFixed(6)} Contracts
-                 </div>
+                    <div className="text-[10px] text-red-400 mt-1">Amount must be greater than 0</div>
+                  )}
+                  {parseFloat(investmentAmount) > currentOption.premium && (
+                    <div className="text-[10px] text-yellow-400 mt-1">
+                      ⚠️ Exceeds available ({currentOption.premium.toFixed(6)} USD max)
+                    </div>
+                  )}
+                  <div className="text-[10px] text-gray-500 mt-1">
+                    ≈ {((parseFloat(investmentAmount) || 0) / currentOption.pricePerContract).toFixed(6)} Contracts
+                  </div>
               </div>
 
               {/* Max Payout & Potential Profit */}
               {(() => {
-                const numContracts = (parseFloat(investmentAmount) || 0) / currentOption.premium;
+                const numContracts = (parseFloat(investmentAmount) || 0) / currentOption.pricePerContract;
                 const strikeWidth = getStrikeWidth(currentOption.raw.order.strikes);
                 const maxPayout = calculateMaxPayout(strikeWidth, numContracts);
                 const potentialProfit = maxPayout - (parseFloat(investmentAmount) || 0);
@@ -330,7 +346,7 @@ function TradeContent() {
         <SwipeButtons 
           onSwipeLeft={() => handleSwipe('left')}
           onSwipeRight={() => handleSwipe('right')}
-          disabled={isPending || isConfirming}
+          disabled={isPending || isConfirming || parseFloat(investmentAmount) > currentOption.premium || parseFloat(investmentAmount) <= 0}
         />
       )}
 

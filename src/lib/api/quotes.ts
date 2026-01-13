@@ -3,7 +3,8 @@ import {
   ASSET_NAMES, 
   PRICE_DECIMALS, 
   STRIKE_DECIMALS,
-  THETANUTS_API_URL 
+  THETANUTS_API_URL,
+  USDC_DECIMALS
 } from '@/lib/constants';
 import type { Option, ThetanutsApiResponse } from '@/types';
 
@@ -31,14 +32,23 @@ function parseQuotesResponse(apiData: ThetanutsApiResponse): Option[] {
     }
 
     const asset = parts[0];
-    const premium = parseFloat(formatUnits(BigInt(order.price), PRICE_DECIMALS));
+    const pricePerContract = parseFloat(formatUnits(BigInt(order.price), PRICE_DECIMALS));
     const strikeRaw = order.strikes[0];
     const strike = parseFloat(formatUnits(BigInt(strikeRaw), STRIKE_DECIMALS));
-    // Calculate leverage: leverage = spot / premium
+    
+    // Calculate max contracts from maxCollateralUsable (USDC has 6 decimals)
+    // For USDC-collateralized options (all assets now): maxContracts = maxCollateralUsable / strike
+    const maxCollateralUsable = parseFloat(formatUnits(BigInt(order.maxCollateralUsable), USDC_DECIMALS));
+    const maxContracts = strike > 0 ? (maxCollateralUsable / strike) * 0.9999 : 0; // Apply safety factor
+    
+    // Total available premium = maxContracts * pricePerContract
+    const totalAvailablePremium = maxContracts * pricePerContract;
+    
+    // Calculate leverage: leverage = spot / pricePerContract
     // Premium from API is in USDC for all options
     const MAX_LEVERAGE = 10000;
     const spotPrice = marketData[asset] || 0;
-    const leverage = premium > 0 ? Math.min(spotPrice / premium, MAX_LEVERAGE) : 0;
+    const leverage = pricePerContract > 0 ? Math.min(spotPrice / pricePerContract, MAX_LEVERAGE) : 0;
     const expiryDate = new Date(order.expiry * 1000);
     const now = new Date();
     const diffTime = Math.abs(expiryDate.getTime() - now.getTime());
@@ -52,7 +62,8 @@ function parseQuotesResponse(apiData: ThetanutsApiResponse): Option[] {
       currentPrice: marketData[asset] || 0,
       type: order.isCall ? 'CALL' : 'PUT',
       strike: strike,
-      premium: premium,
+      premium: totalAvailablePremium, // Total available premium in USD
+      pricePerContract: pricePerContract, // Price per single contract
       expiry: expiryDisplay,
       expiryTimestamp: order.expiry,
       apy: parseFloat(leverage.toFixed(2)),
