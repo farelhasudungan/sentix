@@ -256,8 +256,8 @@ function TradeContent() {
                    <span className="text-xl text-white">$</span>
                    <input 
                      type="number" 
-                     min="0.01"
-                     step="0.01"
+                     min="0.0001"
+                     step="0.0001"
                      value={investmentAmount}
                      onChange={(e) => {
                        const val = e.target.value;
@@ -272,7 +272,7 @@ function TradeContent() {
                    <div className="text-[10px] text-red-400 mt-1">Amount must be greater than 0</div>
                  )}
                  <div className="text-[10px] text-gray-500 mt-1">
-                   ≈ {((parseFloat(investmentAmount) || 0) / currentOption.premium).toFixed(4)} Contracts
+                   ≈ {((parseFloat(investmentAmount) || 0) / currentOption.premium).toFixed(6)} Contracts
                  </div>
               </div>
 
