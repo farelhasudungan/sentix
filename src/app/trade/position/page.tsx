@@ -181,7 +181,7 @@ export default function PositionPage() {
                           ? 'bg-orange-500/20 border border-orange-500/30 text-orange-400'
                           : 'bg-gray-500/20 border border-gray-500/30 text-gray-400'
                     }`}>
-                      {position.asset}
+                      {position.asset === 'UNKNOWN' ? '?' : position.asset}
                     </div>
                     <div>
                       <div className={`font-semibold ${position.type === 'CALL' ? 'text-green-400' : 'text-red-400'}`}>
