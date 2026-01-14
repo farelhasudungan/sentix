@@ -15,9 +15,11 @@ import xrpIcon from '@/assets/icon/xrp.png'
 import { useQuery } from '@tanstack/react-query'
 import { fetchThetanutsQuotes } from '@/lib/api/quotes'
 import { useThetanutsTrade } from '@/hooks/useThetanutsTrade'
-import { getStrikeWidth, calculateMaxPayout, getStructureType } from '@/lib/api/payouts'
+import { getStrikeWidth, calculateMaxPayout, getStructureType, payoutAtPrice } from '@/lib/api/payouts'
 import { FilterBar } from '@/components/ui/FilterBar'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
+import { OptionTypeModal } from '@/components/ui/OptionTypeModal'
+import { ProfitDetailModal } from '@/components/ui/ProfitDetailModal'
 import { SwipeButtons } from '@/components/features/trade/SwipeButtons'
 import type { Option } from '@/types'
 
@@ -96,6 +98,10 @@ function TradeContent() {
 
   // Investment amount state - will be set based on available premium
   const [investmentAmount, setInvestmentAmount] = useState<string>('')
+  
+  // Modal states
+  const [isOptionTypeModalOpen, setIsOptionTypeModalOpen] = useState(false)
+  const [isProfitModalOpen, setIsProfitModalOpen] = useState(false)
 
   // Set smart default investment amount when currentOption changes
   useEffect(() => {
@@ -292,36 +298,54 @@ function TradeContent() {
                   </div>
               </div>
 
-              {/* Max Payout & Potential Profit */}
+              {/* Option Type & Potential Profit */}
               {(() => {
                 const numContracts = (parseFloat(investmentAmount) || 0) / currentOption.pricePerContract;
-                const strikeWidth = getStrikeWidth(currentOption.raw.order.strikes);
-                const maxPayout = calculateMaxPayout(strikeWidth, numContracts);
-                const potentialProfit = maxPayout - (parseFloat(investmentAmount) || 0);
                 const structureType = getStructureType(currentOption.raw.order.strikes.length);
+                
+                // Calculate profit at 5% move from strike
+                const isCall = currentOption.type === 'CALL';
+                const price5Percent = isCall 
+                  ? currentOption.strike * 1.05 
+                  : currentOption.strike * 0.95;
+                
+                // Calculate payout at 5% move using imported function
+                const payout5Percent = payoutAtPrice(
+                  currentOption.raw.order.strikes,
+                  isCall,
+                  numContracts,
+                  price5Percent
+                );
+                const potentialProfit = payout5Percent - (parseFloat(investmentAmount) || 0);
                 
                 return (
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center">
-                      <div className="text-blue-400 text-xs mb-1 uppercase tracking-wide">
-                        Max Payout
+                    <button
+                      onClick={() => setIsOptionTypeModalOpen(true)}
+                      className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-center cursor-pointer hover:bg-blue-500/20 hover:border-blue-500/50 transition-all group"
+                    >
+                      <div className="text-blue-400 text-xs mb-1 uppercase tracking-wide flex items-center justify-center gap-1">
+                        Option Type
                       </div>
                       <div className="text-lg font-bold text-blue-400">
-                        {formatMoney(maxPayout)}
+                        {structureType}
                       </div>
-                      <div className="text-[9px] text-blue-400/60">{structureType}</div>
-                    </div>
-                    <div className={`border rounded-xl p-3 text-center ${potentialProfit >= 0 ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                      <div className={`text-xs mb-1 uppercase tracking-wide ${potentialProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className="text-[9px] text-blue-400/60">Tap to see</div>
+                    </button>
+                    <button
+                      onClick={() => setIsProfitModalOpen(true)}
+                      className={`border rounded-xl p-3 text-center cursor-pointer transition-all group ${potentialProfit >= 0 ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 hover:border-green-500/50' : 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50'}`}
+                    >
+                      <div className={`text-xs mb-1 uppercase tracking-wide flex items-center justify-center gap-1 ${potentialProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         Potential Profit
                       </div>
                       <div className={`text-lg font-bold ${potentialProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {potentialProfit >= 0 ? '+' : ''}{formatMoney(potentialProfit)}
                       </div>
                       <div className={`text-[9px] ${potentialProfit >= 0 ? 'text-green-400/60' : 'text-red-400/60'}`}>
-                        {numContracts > 0 ? `${((potentialProfit / (parseFloat(investmentAmount) || 1)) * 100).toFixed(0)}% ROI` : '-'}
+                        Tap to see scenarios
                       </div>
-                    </div>
+                    </button>
                   </div>
                 );
               })()}
@@ -347,6 +371,26 @@ function TradeContent() {
           onSwipeLeft={() => handleSwipe('left')}
           onSwipeRight={() => handleSwipe('right')}
           disabled={isPending || isConfirming || parseFloat(investmentAmount) > currentOption.premium || parseFloat(investmentAmount) <= 0}
+        />
+      )}
+
+      {/* Option Type Modal */}
+      {currentOption && (
+        <OptionTypeModal
+          isOpen={isOptionTypeModalOpen}
+          onClose={() => setIsOptionTypeModalOpen(false)}
+          option={currentOption}
+          investmentAmount={parseFloat(investmentAmount) || 0}
+        />
+      )}
+
+      {/* Profit Detail Modal */}
+      {currentOption && (
+        <ProfitDetailModal
+          isOpen={isProfitModalOpen}
+          onClose={() => setIsProfitModalOpen(false)}
+          option={currentOption}
+          investmentAmount={parseFloat(investmentAmount) || 0}
         />
       )}
 

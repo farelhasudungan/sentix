@@ -44,7 +44,7 @@ const Homepage = () => {
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden" style={{ background: '#141414' }}>
-      {/* Animated Clouds Background */}
+
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute -top-20 left-[10%] w-64 h-32 opacity-5 animate-pulse" style={{ background: 'radial-gradient(ellipse, rgba(251,191,36,0.3), transparent 70%)', animation: 'float 20s ease-in-out infinite' }} />
         <div className="absolute top-40 right-[5%] w-48 h-24 opacity-5" style={{ background: 'radial-gradient(ellipse, rgba(251,191,36,0.2), transparent 70%)', animation: 'float 25s ease-in-out infinite reverse' }} />
@@ -86,19 +86,19 @@ const Homepage = () => {
         </div>
       </nav>
 
-      {/* Hero Section with Pixel Art Style */}
+      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-32 pb-20 px-4">
         {/* Gradient Glow */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(251,191,36,0.1) 0%, transparent 50%)' }} />
         
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          {/* Pixel Badge */}
+          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full" style={{ background: 'rgba(251,191,36,0.1)', border: '2px solid rgba(251,191,36,0.3)' }}>
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span className="text-amber-400 text-sm font-semibold">A New Type of Trading Game</span>
           </div>
 
-          {/* Main Heading with Pixel Style Shadow */}
+          {/* Main Heading */}
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
             <span className="block" style={{ 
               background: 'linear-gradient(to bottom, #ffffff, #d4d4d4)',
@@ -122,7 +122,7 @@ const Homepage = () => {
             Master options and compete with friends. Build your portfolio.
           </p>
 
-          {/* CTA Buttons with Pixel Style */}
+          {/* CTA Buttons*/}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
             <Link href="/trade">
               <div className="pixel-button-gold-lg">
@@ -159,7 +159,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Ticker Banner */}
+      {/* Banner */}
       <div className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)' }}>
         <div className="flex animate-marquee whitespace-nowrap">
           {[...Array(10)].map((_, i) => (
@@ -170,7 +170,7 @@ const Homepage = () => {
         </div>
       </div>
 
-      {/* Features Section with Pixel Cards */}
+      {/* Features Section*/}
       <section id="features" className="py-24 px-4 relative">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -212,7 +212,7 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* How It Works with Pixel Style */}
+      {/* How It Works*/}
       <section id="how-it-works" className="py-24 px-4" style={{ background: 'linear-gradient(to bottom, rgba(251,191,36,0.05), transparent)' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
