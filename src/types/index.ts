@@ -93,3 +93,71 @@ export interface ChatMessage {
   content: string;
   recommendedTrade?: Option;
 }
+
+// Tournament Types
+export type TournamentStatus = 'upcoming' | 'live' | 'ended';
+
+export interface Tournament {
+  id: string;
+  name: string;
+  description: string | null;
+  emoji: string;
+  prize_pool: string;
+  prize_distribution: PrizeDistribution[] | null;
+  start_date: string;
+  end_date: string;
+  status: TournamentStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+// Prize distribution for each rank
+export interface PrizeDistribution {
+  rank: number;
+  amount: string;
+}
+
+export interface TournamentParticipant {
+  id: string;
+  tournament_id: string;
+  wallet_address: string;
+  joined_at: string;
+}
+
+export interface TournamentScore {
+  id: string;
+  tournament_id: string;
+  wallet_address: string;
+  total_premium_paid: number;
+  total_profit: number;
+  trade_count: number;
+  streak_days: number;
+  score: number;
+  rank: number | null;
+  last_trade_date: string | null;
+  updated_at: string;
+}
+
+export interface TournamentWithStats extends Tournament {
+  participant_count: number;
+  user_joined?: boolean;
+  user_rank?: number | null;
+}
+
+export interface LeaderboardEntry {
+  wallet_address: string;
+  score: number;
+  rank: number;
+  total_premium_paid: number;
+  total_profit: number;
+  trade_count: number;
+  streak_days: number;
+}
+
+// Scoring weights
+export const SCORING_WEIGHTS = {
+  premiumPaid: 0.4,   // 40%
+  profitRatio: 0.3,   // 30%
+  tradeCount: 0.2,    // 20%
+  streakDays: 0.1,    // 10%
+} as const;

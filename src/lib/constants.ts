@@ -1,5 +1,5 @@
 export const THETANUTS_API_URL = 'https://round-snowflake-9c31.devops-118.workers.dev/';
-export const REFERRER_ADDRESS = '0x94D784e81A5c8cA6E19629C73217b61a256Ea1c7';
+export const REFERRER_ADDRESS = '0x46dc9557573efad018cf98f8d4e14a6da71e546c';
 export const USDC_ADDRESS = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'; // USDC on Base
 export const BASE_CHAIN_ID = 8453;
 export const INDEXER_BASE_URL = 'https://optionbook-indexer.thetanuts.finance/api/v1';

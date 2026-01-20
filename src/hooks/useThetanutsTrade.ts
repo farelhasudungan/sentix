@@ -8,6 +8,42 @@ import { useWalletModal } from '@/context/WalletModalContext'
 import { REFERRER_ADDRESS, USDC_ADDRESS, BASE_CHAIN_ID } from '@/lib/constants'
 import type { Option } from '@/types'
 
+// Helper function to record trade in active tournaments
+async function recordTournamentTrade(
+  walletAddress: string, 
+  premiumPaid: number, 
+  profit: number = 0
+): Promise<void> {
+  try {
+    // Fetch active tournaments user is enrolled in
+    const response = await fetch(`/api/tournaments?wallet=${walletAddress}`)
+    if (!response.ok) return
+    
+    const tournaments = await response.json()
+    
+    // Find live tournaments user has joined
+    const liveTournaments = tournaments.filter(
+      (t: { status: string; user_joined: boolean }) => t.status === 'live' && t.user_joined
+    )
+    
+    // Record trade score for each active tournament
+    for (const tournament of liveTournaments) {
+      try {
+        await fetch(`/api/tournaments/${tournament.id}/score`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ walletAddress, premiumPaid, profit }),
+        })
+        console.log(`Tournament score updated for ${tournament.name}`)
+      } catch (err) {
+        console.error(`Failed to update tournament score:`, err)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to record tournament trade:', error)
+  }
+}
+
 export function useThetanutsTrade() {
   const config = useConfig()
   const { isConnected, address, chainId } = useAccount()
@@ -141,6 +177,11 @@ export function useThetanutsTrade() {
       // Trigger indexer sync
       triggerSync().catch(console.error);
       
+      // Record trade for tournament scoring (async, don't block)
+      if (address) {
+        recordTournamentTrade(address, amount, 0).catch(console.error);
+      }
+      
       return { status: 'trade_initiated' };
     } catch (error) {
       console.error('Trade execution failed:', error);
@@ -156,3 +197,4 @@ export function useThetanutsTrade() {
     isConnected
   }
 }
+
