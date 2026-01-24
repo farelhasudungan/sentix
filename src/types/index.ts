@@ -161,3 +161,41 @@ export const SCORING_WEIGHTS = {
   tradeCount: 0.2,    // 20%
   streakDays: 0.1,    // 10%
 } as const;
+
+// Feed Types
+export interface AttachedTrade {
+  asset: string;
+  type: 'CALL' | 'PUT';
+  strike: number;
+  expiry: string;
+  expiryTimestamp: number;
+  premium: number;
+  currentPrice: number;
+}
+
+export interface FeedPost {
+  id: string;
+  wallet_address: string;
+  content: string;
+  attached_trade: AttachedTrade | null;
+  created_at: string;
+  updated_at: string;
+  like_count: number;
+  comment_count: number;
+  user_liked?: boolean;
+}
+
+export interface FeedComment {
+  id: string;
+  post_id: string;
+  wallet_address: string;
+  content: string;
+  created_at: string;
+}
+
+export interface FeedLike {
+  id: string;
+  post_id: string;
+  wallet_address: string;
+  created_at: string;
+}

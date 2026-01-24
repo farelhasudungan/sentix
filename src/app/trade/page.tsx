@@ -48,9 +48,10 @@ function TradeContent() {
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [positions, setPositions] = useState<Option[]>([])
   const [filter, setFilter] = useState('ALL')
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'CALL' | 'PUT'>('ALL')
   
-  // Track the signature we've already navigated to
-  const navigatedSignatureRef = React.useRef<string | null>(null)
+  // Track if we've already applied URL params
+  const appliedParamsRef = React.useRef<string | null>(null)
 
   // Fetch live data
   const { data: optionsData = [], isLoading, error, refetch } = useQuery({
@@ -59,40 +60,71 @@ function TradeContent() {
     refetchInterval: 30000,
   })
 
-  // Get signature from URL
+  // Get params from URL (from feed trade cards or direct links)
+  const urlFilter = searchParams.get('filter')
+  const urlType = searchParams.get('type') as 'CALL' | 'PUT' | null
+  const urlStrike = searchParams.get('strike')
   const signature = searchParams.get('signature')
+  const paramsKey = `${urlFilter}-${urlType}-${urlStrike}-${signature}`
 
-  // Derived state for filtered options
-  const filteredOptions = optionsData.filter(
-    (option) => filter === 'ALL' || option.asset === filter
-  )
+  // Derived state for filtered options (now includes type filter)
+  const filteredOptions = optionsData.filter((option) => {
+    const matchesAsset = filter === 'ALL' || option.asset === filter
+    const matchesType = typeFilter === 'ALL' || option.type === typeFilter
+    return matchesAsset && matchesType
+  })
 
   const currentOption = filteredOptions[currentIndex]
 
-  // Auto-navigate to specific trade when signature is in URL
+  // Auto-apply filters from URL params (from feed trade cards)
   useEffect(() => {
-    // Skip if no signature, no data, or we've already navigated to this signature
-    if (!signature || optionsData.length === 0 || navigatedSignatureRef.current === signature) {
+    if (optionsData.length === 0 || appliedParamsRef.current === paramsKey) {
       return
     }
 
-    // Find the option in all options
-    const targetOption = optionsData.find(opt => opt.raw.signature === signature)
-    if (targetOption) {
-      // Set filter to the asset of the target option
-      setFilter(targetOption.asset)
-      
-      // Find index in the filtered list (filter by asset)
-      const filteredByAsset = optionsData.filter(opt => opt.asset === targetOption.asset)
-      const targetIndex = filteredByAsset.findIndex(opt => opt.raw.signature === signature)
-      
+    // Handle filter and type params from feed trade cards
+    if (urlFilter && urlFilter !== 'ALL') {
+      setFilter(urlFilter)
+    }
+    if (urlType && (urlType === 'CALL' || urlType === 'PUT')) {
+      setTypeFilter(urlType)
+    }
+
+    // If strike is provided, try to find and navigate to that specific trade
+    if (urlFilter && urlType && urlStrike) {
+      const strikeNum = parseFloat(urlStrike)
+      const matchingOptions = optionsData.filter(
+        opt => opt.asset === urlFilter && opt.type === urlType
+      )
+      const targetIndex = matchingOptions.findIndex(opt => opt.strike === strikeNum)
       if (targetIndex >= 0) {
         setCurrentIndex(targetIndex)
-        // Mark this signature as navigated
-        navigatedSignatureRef.current = signature
       }
     }
-  }, [signature, optionsData])
+
+    // Handle legacy signature param
+    if (signature) {
+      const targetOption = optionsData.find(opt => opt.raw.signature === signature)
+      if (targetOption) {
+        setFilter(targetOption.asset)
+        setTypeFilter(targetOption.type)
+        const matchingOptions = optionsData.filter(
+          opt => opt.asset === targetOption.asset && opt.type === targetOption.type
+        )
+        const targetIndex = matchingOptions.findIndex(opt => opt.raw.signature === signature)
+        if (targetIndex >= 0) {
+          setCurrentIndex(targetIndex)
+        }
+      }
+    }
+
+    // Reset index when filters change from URL (only if no specific target)
+    if ((urlFilter || urlType) && !signature && !urlStrike) {
+      setCurrentIndex(0)
+    }
+
+    appliedParamsRef.current = paramsKey
+  }, [paramsKey, optionsData, urlFilter, urlType, urlStrike, signature])
 
   const { executeTrade, isPending, isConfirming } = useThetanutsTrade()
 
@@ -178,6 +210,30 @@ function TradeContent() {
           setCurrentIndex(0);
         }} 
       />
+
+      {/* Type Filter */}
+      <div className="flex justify-center gap-2 mb-4">
+        {(['ALL', 'CALL', 'PUT'] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => {
+              setTypeFilter(type);
+              setCurrentIndex(0);
+            }}
+            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              typeFilter === type
+                ? type === 'CALL'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : type === 'PUT'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
+            }`}
+          >
+            {type}
+          </button>
+        ))}
+      </div>
 
       {/* Swipe Card */}
       {currentOption ? (

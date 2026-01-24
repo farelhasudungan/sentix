@@ -3,12 +3,13 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Trophy, BarChart3, Bot, Settings, Bell, User, Wallet, LogOut } from 'lucide-react'
+import { Home, Trophy, BarChart3, Bot, Settings, Bell, User, Wallet, LogOut, MessageSquare } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useWalletModal } from '@/context/WalletModalContext'
 
 const navItems = [
   { href: '/trade', label: 'Home', icon: Home },
+  { href: '/trade/feed', label: 'Feed', icon: MessageSquare },
   { href: '/trade/games', label: 'Games', icon: Trophy },
   { href: '/trade/position', label: 'Positions', icon: BarChart3 },
   { href: '/trade/agent', label: 'AI Help', icon: Bot },
