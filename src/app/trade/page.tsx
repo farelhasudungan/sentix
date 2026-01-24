@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { Clock, DollarSign, TrendingUp, Activity, AlertTriangle, X, ArrowUp, ArrowDown } from 'lucide-react'
+import { Clock, DollarSign, TrendingUp, Activity, AlertTriangle, X, ArrowUp, ArrowDown, ExternalLink, CheckCircle } from 'lucide-react'
 
 // Import coin icons
 import btcIcon from '@/assets/icon/bitcoin.png'
@@ -21,6 +21,7 @@ import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { OptionTypeModal } from '@/components/ui/OptionTypeModal'
 import { ProfitDetailModal } from '@/components/ui/ProfitDetailModal'
 import { SwipeButtons } from '@/components/features/trade/SwipeButtons'
+import { useNotifications } from '@/context/NotificationContext'
 import type { Option } from '@/types'
 
 const coins = ['ALL', 'BTC', 'ETH', 'SOL', 'BNB', 'XRP']
@@ -127,6 +128,7 @@ function TradeContent() {
   }, [paramsKey, optionsData, urlFilter, urlType, urlStrike, signature])
 
   const { executeTrade, isPending, isConfirming } = useThetanutsTrade()
+  const { addNotification } = useNotifications()
 
   // Investment amount state - will be set based on available premium
   const [investmentAmount, setInvestmentAmount] = useState<string>('')
@@ -136,6 +138,14 @@ function TradeContent() {
   const [isProfitModalOpen, setIsProfitModalOpen] = useState(false)
   const [showTradeConfirm, setShowTradeConfirm] = useState(false)
   const [pendingTradeOption, setPendingTradeOption] = useState<Option | null>(null)
+  
+  // Success notification state
+  const [successNotification, setSuccessNotification] = useState<{
+    show: boolean
+    hash: string
+    asset: string
+    type: string
+  } | null>(null)
 
   // Set smart default investment amount when currentOption changes
   useEffect(() => {
@@ -209,6 +219,26 @@ function TradeContent() {
       setSwipeDirection(null)
       setPendingTradeOption(null)
       return
+    }
+
+    // Show success notification with transaction hash
+    if (result && result.status === 'success' && result.hash) {
+      setSuccessNotification({
+        show: true,
+        hash: result.hash,
+        asset: freshOption.asset,
+        type: freshOption.type
+      })
+      // Auto-hide after 8 seconds
+      setTimeout(() => setSuccessNotification(null), 8000)
+      
+      // Save to notification history
+      addNotification({
+        type: 'trade_success',
+        title: 'Trade Successful!',
+        message: `${freshOption.asset} ${freshOption.type} position opened`,
+        tx_hash: result.hash
+      })
     }
 
     setPositions([...positions, freshOption])
@@ -363,19 +393,27 @@ function TradeContent() {
                  <div className="flex items-center justify-center gap-2">
                    <span className="text-xl text-white">$</span>
                    <input 
-                     type="number" 
-                     min="0.0001"
-                     step="0.0001"
+                     type="text" 
+                     inputMode="decimal"
                      value={investmentAmount}
                      onChange={(e) => {
                        const val = e.target.value;
-                       if (val === '' || parseFloat(val) >= 0) {
-                         // Round down to 6 decimal places (USDC precision)
-                         const rounded = Math.floor(parseFloat(val) * 1e6) / 1e6;
-                         setInvestmentAmount(isNaN(rounded) ? '' : rounded.toString());
+                       // Allow empty, numbers, and decimals while typing
+                       if (val === '' || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                         setInvestmentAmount(val);
                        }
                      }}
-                     className="text-xl font-bold w-24 text-center bg-transparent border-b-2 border-yellow-500/50 focus:outline-none focus:border-yellow-400 text-white"
+                     onBlur={(e) => {
+                       const val = parseFloat(e.target.value);
+                       if (!isNaN(val) && val >= 0) {
+                         // Round down to 6 decimal places on blur
+                         const rounded = Math.floor(val * 1e6) / 1e6;
+                         setInvestmentAmount(rounded.toString());
+                       } else if (e.target.value === '') {
+                         setInvestmentAmount('');
+                       }
+                     }}
+                     className="text-xl font-bold w-28 text-center bg-transparent border-b-2 border-yellow-500/50 focus:outline-none focus:border-yellow-400 text-white"
                    />
                  </div>
                  {parseFloat(investmentAmount) <= 0 && investmentAmount !== '' && (
@@ -606,6 +644,45 @@ function TradeContent() {
           </div>
         )
       })()}
+
+      {/* Success Notification Toast */}
+      {successNotification && (
+        <div 
+          className="fixed bottom-24 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300"
+        >
+          <div 
+            className="rounded-2xl p-4 border border-green-500/30 shadow-lg"
+            style={{ background: 'linear-gradient(180deg, rgba(34,197,94,0.15) 0%, rgba(26,26,26,0.98) 100%)' }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-green-400 font-semibold text-sm">Trade Successful!</p>
+                <p className="text-gray-400 text-xs mt-1">
+                  {successNotification.asset} {successNotification.type} position opened
+                </p>
+                <a
+                  href={`https://basescan.org/tx/${successNotification.hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  View on BaseScan
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <button
+                onClick={() => setSuccessNotification(null)}
+                className="p-1 text-gray-500 hover:text-white hover:bg-white/10 rounded transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

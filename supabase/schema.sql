@@ -165,3 +165,37 @@ CREATE POLICY "Allow public read feed_comments" ON feed_comments
 CREATE POLICY "Allow service role full access to feed_comments" ON feed_comments
   FOR ALL TO service_role
   USING (true);
+
+-- ============================================
+-- USER NOTIFICATIONS SYSTEM
+-- ============================================
+
+-- Notifications table
+CREATE TABLE IF NOT EXISTS user_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_address TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('trade_success', 'trade_error', 'info')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  tx_hash TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for faster lookups by wallet
+CREATE INDEX IF NOT EXISTS idx_user_notifications_wallet ON user_notifications(wallet_address);
+CREATE INDEX IF NOT EXISTS idx_user_notifications_created ON user_notifications(created_at DESC);
+
+-- Enable RLS for user_notifications
+ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access to user notifications
+CREATE POLICY "Allow public read user_notifications" ON user_notifications
+  FOR SELECT TO anon, authenticated
+  USING (true);
+
+-- Allow service role full access to user notifications
+CREATE POLICY "Allow service role full access to user_notifications" ON user_notifications
+  FOR ALL TO service_role
+  USING (true);
+

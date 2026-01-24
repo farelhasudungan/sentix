@@ -166,7 +166,7 @@ export function useThetanutsTrade() {
     const referrer = REFERRER_ADDRESS;
 
     try {
-      await writeContractAsync({
+      const tradeHash = await writeContractAsync({
         chainId: BASE_CHAIN_ID,
         address: optionBookAddress,
         abi: OPTION_BOOK_ABI,
@@ -182,7 +182,7 @@ export function useThetanutsTrade() {
         recordTournamentTrade(address, amount, 0).catch(console.error);
       }
       
-      return { status: 'trade_initiated' };
+      return { status: 'success', hash: tradeHash };
     } catch (error) {
       console.error('Trade execution failed:', error);
       return { status: 'error', error };
