@@ -122,6 +122,7 @@ export function formatPosition(position: UserPosition) {
     pnl: payout - premium,
     pnlPercent: premium > 0 ? ((payout - premium) / premium) * 100 : 0,
     entryTxHash: position.entryTxHash,
+    closeTxHash: position.closeTxHash,
     raw: position,
   };
 }

@@ -66,6 +66,8 @@ export interface UserPosition {
   entryTxHash: string;
   entryPremium: string;
   entryFeePaid: string;
+  closeTxHash: string;
+  closeTimestamp: number;
   collateralToken: string;
   collateralSymbol: string;
   collateralDecimals: number;
