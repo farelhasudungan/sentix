@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { Clock, DollarSign, TrendingUp, Activity } from 'lucide-react'
+import { Clock, DollarSign, TrendingUp, Activity, AlertTriangle, X, ArrowUp, ArrowDown } from 'lucide-react'
 
 // Import coin icons
 import btcIcon from '@/assets/icon/bitcoin.png'
@@ -134,6 +134,8 @@ function TradeContent() {
   // Modal states
   const [isOptionTypeModalOpen, setIsOptionTypeModalOpen] = useState(false)
   const [isProfitModalOpen, setIsProfitModalOpen] = useState(false)
+  const [showTradeConfirm, setShowTradeConfirm] = useState(false)
+  const [pendingTradeOption, setPendingTradeOption] = useState<Option | null>(null)
 
   // Set smart default investment amount when currentOption changes
   useEffect(() => {
@@ -155,32 +157,62 @@ function TradeContent() {
     }).format(value)
   }
 
+  // Format USDC with 6 decimal precision 
+  const formatUSDC = (value: number) => {
+    const rounded = Math.floor(value * 1e6) / 1e6
+    if (rounded === Math.floor(rounded)) {
+      return `$${rounded.toFixed(0)}`
+    }
+    // Remove trailing zeros
+    return `$${rounded.toFixed(6).replace(/\.?0+$/, '')}`
+  }
+
   const handleSwipe = async (direction: 'left' | 'right') => {
-    // Capture the current option at swipe time from the current filtered list
     const optionToTrade = filteredOptions[currentIndex];
     if (!optionToTrade) return
 
-    setSwipeDirection(direction)
-    
     if (direction === 'right') {
-      const { data: freshOptions } = await refetch()
-      
-      // Find the exact same order using signature (unique identifier)
-      const freshOption = freshOptions?.find(
-        (opt) => opt.raw.signature === optionToTrade.raw.signature && 
-                 opt.raw.optionBookAddress === optionToTrade.raw.optionBookAddress
-      ) || optionToTrade
-      
-      console.log('Trading option:', freshOption.asset, freshOption.type, freshOption.strike);
-      
-      const result = await executeTrade(freshOption, investmentAmount)
-      if (result && result.status === 'connecting_wallet') {
-        setSwipeDirection(null)
-        return
-      }
-
-      setPositions([...positions, freshOption])
+      // Show confirmation modal before trading
+      setPendingTradeOption(optionToTrade)
+      setShowTradeConfirm(true)
+      return
     }
+
+    // Left swipe - just skip
+    setSwipeDirection(direction)
+    setTimeout(() => {
+      setSwipeDirection(null)
+      if (currentIndex < filteredOptions.length - 1) {
+        setCurrentIndex(currentIndex + 1)
+      } else {
+        setCurrentIndex(0)
+      }
+    }, 300)
+  }
+
+  const handleConfirmTrade = async () => {
+    if (!pendingTradeOption) return
+    
+    setShowTradeConfirm(false)
+    setSwipeDirection('right')
+    
+    const { data: freshOptions } = await refetch()
+    const freshOption = freshOptions?.find(
+      (opt) => opt.raw.signature === pendingTradeOption.raw.signature && 
+               opt.raw.optionBookAddress === pendingTradeOption.raw.optionBookAddress
+    ) || pendingTradeOption
+    
+    console.log('Trading option:', freshOption.asset, freshOption.type, freshOption.strike);
+    
+    const result = await executeTrade(freshOption, investmentAmount)
+    if (result && result.status === 'connecting_wallet') {
+      setSwipeDirection(null)
+      setPendingTradeOption(null)
+      return
+    }
+
+    setPositions([...positions, freshOption])
+    setPendingTradeOption(null)
     
     setTimeout(() => {
       setSwipeDirection(null)
@@ -190,6 +222,11 @@ function TradeContent() {
         setCurrentIndex(0)
       }
     }, 300)
+  }
+
+  const handleCancelTrade = () => {
+    setShowTradeConfirm(false)
+    setPendingTradeOption(null)
   }
 
   return (
@@ -450,17 +487,126 @@ function TradeContent() {
         />
       )}
 
-      {/* Quick Stats */}
-      <div className="flex justify-center gap-4 mt-6">
-        <div className="rounded-xl px-6 py-3 text-center" style={{ background: 'rgba(26,26,26,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="text-lg font-bold text-white">{positions.length}</div>
-          <div className="text-[10px] text-gray-500">BOUGHT</div>
-        </div>
-        <div className="rounded-xl px-6 py-3 text-center" style={{ background: 'rgba(26,26,26,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="text-lg font-bold text-white">{currentIndex}</div>
-          <div className="text-[10px] text-gray-500">PASSED</div>
-        </div>
-      </div>
+      {/* Trade Confirmation Modal */}
+      {showTradeConfirm && pendingTradeOption && (() => {
+        const investment = parseFloat(investmentAmount) || 0
+        const numContracts = investment / pendingTradeOption.pricePerContract
+        const maxLoss = investment
+        const isCall = pendingTradeOption.type === 'CALL'
+        
+        // Calculate potential profit at 5% move
+        const price5Percent = isCall 
+          ? pendingTradeOption.strike * 1.05 
+          : pendingTradeOption.strike * 0.95
+        const payout5Percent = payoutAtPrice(
+          pendingTradeOption.raw.order.strikes,
+          isCall,
+          numContracts,
+          price5Percent
+        )
+        const profit5Percent = payout5Percent - investment
+
+        return (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
+            onClick={handleCancelTrade}
+          >
+            <div 
+              className="w-full max-w-md rounded-2xl border border-white/10 overflow-hidden"
+              style={{ background: 'linear-gradient(180deg, rgba(38,38,38,0.98) 0%, rgba(26,26,26,0.99) 100%)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCall ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                    {isCall ? <ArrowUp className="w-5 h-5 text-green-400" /> : <ArrowDown className="w-5 h-5 text-red-400" />}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Confirm Trade</h3>
+                    <p className="text-xs text-gray-400">{pendingTradeOption.asset} {pendingTradeOption.type}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCancelTrade}
+                  className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Trade Details */}
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Strike Price</span>
+                  <span className="text-white font-medium">${pendingTradeOption.strike.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Your Investment</span>
+                  <span className="text-white font-medium">{formatUSDC(investment)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400 text-sm">Expiry</span>
+                  <span className="text-white font-medium">{pendingTradeOption.expiry}</span>
+                </div>
+              </div>
+
+              {/* Payoff Asymmetry */}
+              <div className="px-4 pb-4">
+                <p className="text-gray-400 text-xs mb-2 uppercase tracking-wide">Payoff Asymmetry</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                    <p className="text-red-400 text-[10px] uppercase mb-1">Max Loss</p>
+                    <p className="text-red-400 font-bold text-lg">-{formatMoney(maxLoss)}</p>
+                    <p className="text-red-400/60 text-[10px]">100% of investment</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <p className="text-green-400 text-[10px] uppercase mb-1">Potential Profit</p>
+                    <p className="text-green-400 font-bold text-lg">+{formatMoney(profit5Percent)}</p>
+                    <p className="text-green-400/60 text-[10px]">{((profit5Percent / investment) * 100).toFixed(0)}% return</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Risk Warning */}
+              <div className="px-4 pb-4">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-amber-400 text-sm font-medium">Risk Warning</p>
+                    <p className="text-amber-400/70 text-xs mt-1">
+                      Options trading involves risk. You can lose your entire investment if the market moves against you.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 p-4 pt-0">
+                <button
+                  onClick={handleCancelTrade}
+                  className="flex-1 py-3 rounded-xl font-semibold text-sm bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmTrade}
+                  disabled={isPending || isConfirming}
+                  className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 ${
+                    isCall 
+                      ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30'
+                      : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
+                  }`}
+                >
+                  {isPending || isConfirming ? 'Processing...' : 'Confirm Trade'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
+
