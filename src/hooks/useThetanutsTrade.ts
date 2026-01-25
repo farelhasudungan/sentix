@@ -1,7 +1,7 @@
 'use client'
 
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain, useConfig } from 'wagmi'
-import { waitForTransactionReceipt } from 'wagmi/actions'
+import { waitForTransactionReceipt, readContract } from 'wagmi/actions'
 import { OPTION_BOOK_ABI, ERC20_ABI } from '@/lib/contracts/abi'
 import { triggerSync } from '@/lib/api/positions'
 import { useWalletModal } from '@/context/WalletModalContext'
@@ -70,6 +70,25 @@ export function useThetanutsTrade() {
     return true
   }
 
+  // Check existing USDC allowance
+  const checkAllowance = async (spender: `0x${string}`): Promise<bigint> => {
+    if (!address) return BigInt(0)
+
+    try {
+      const allowance = await readContract(config, {
+        address: USDC_ADDRESS as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: 'allowance',
+        args: [address, spender],
+      })
+      console.log('Current USDC allowance:', allowance?.toString())
+      return allowance as bigint
+    } catch (error) {
+      console.error('Failed to check allowance:', error)
+      return BigInt(0)
+    }
+  }
+
   // Request USDC approval and wait for confirmation
   const requestApproval = async (spender: `0x${string}`, amount: bigint): Promise<`0x${string}` | null> => {
     if (!address) return null
@@ -128,23 +147,31 @@ export function useThetanutsTrade() {
 
     const optionBookAddress = currentOption.raw.optionBookAddress as `0x${string}`;
 
-    // Request USDC approval before trade
-    const approvalHash = await requestApproval(optionBookAddress, amountInUsdcUnits);
-    if (!approvalHash) {
-      return { status: 'error', error: 'Failed to approve USDC' };
-    }
+    // Check existing allowance before requesting approval
+    const currentAllowance = await checkAllowance(optionBookAddress);
+    
+    if (currentAllowance < amountInUsdcUnits) {
+      // Need to request approval
+      console.log(`Insufficient allowance (${currentAllowance.toString()}), requesting approval for ${amountInUsdcUnits.toString()}`);
+      const approvalHash = await requestApproval(optionBookAddress, amountInUsdcUnits);
+      if (!approvalHash) {
+        return { status: 'error', error: 'Failed to approve USDC' };
+      }
 
-    // Wait for approval transaction to be confirmed before sending trade
-    console.log('Waiting for approval confirmation...');
-    try {
-      await waitForTransactionReceipt(config, { 
-        hash: approvalHash,
-        confirmations: 1,
-      });
-      console.log('Approval confirmed!');
-    } catch (error) {
-      console.error('Approval confirmation failed:', error);
-      return { status: 'error', error: 'Approval transaction failed' };
+      // Wait for approval transaction to be confirmed before sending trade
+      console.log('Waiting for approval confirmation...');
+      try {
+        await waitForTransactionReceipt(config, { 
+          hash: approvalHash,
+          confirmations: 1,
+        });
+        console.log('Approval confirmed!');
+      } catch (error) {
+        console.error('Approval confirmation failed:', error);
+        return { status: 'error', error: 'Approval transaction failed' };
+      }
+    } else {
+      console.log(`Sufficient allowance exists (${currentAllowance.toString()}), skipping approval`);
     }
 
     const orderArgs = {
