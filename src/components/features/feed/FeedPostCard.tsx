@@ -7,11 +7,45 @@ import type { FeedPost } from '@/types'
 import { TradeAttachmentCard } from './TradeAttachmentCard'
 import { FeedCommentSection } from './FeedCommentSection'
 import { likePost, unlikePost, generateShareLink, formatRelativeTime, truncateAddress } from '@/lib/api/feed'
+import { useUserAlias } from '@/hooks/useUserAlias'
 
 interface FeedPostCardProps {
   post: FeedPost
   onLikeChange?: (postId: string, liked: boolean, newCount: number) => void
   onDelete?: (postId: string) => void
+}
+
+// Helper component for displaying post author with alias support
+function PostAuthorDisplay({ walletAddress, createdAt }: { walletAddress: string; createdAt: string }) {
+  const { displayName, isCustomAlias } = useUserAlias(walletAddress)
+  
+  // Generate avatar color from wallet address
+  const hash = walletAddress.slice(2, 10)
+  const hue = parseInt(hash, 16) % 360
+  const gradient = `linear-gradient(135deg, hsl(${hue}, 70%, 50%), hsl(${(hue + 40) % 360}, 70%, 40%))`
+  
+  return (
+    <div className="flex items-center gap-3">
+      <div 
+        className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+        style={{ background: gradient, color: '#fff' }}
+      >
+        {walletAddress.slice(2, 4).toUpperCase()}
+      </div>
+      <div>
+        <p 
+          className="font-medium text-sm"
+          style={{ color: isCustomAlias ? '#fbbf24' : '#fff' }}
+          title={walletAddress}
+        >
+          {displayName}
+        </p>
+        <p className="text-gray-500 text-xs">
+          {formatRelativeTime(createdAt)}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps) {
@@ -94,25 +128,10 @@ export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-              style={{ 
-                background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                color: '#1a1a1a'
-              }}
-            >
-              {post.wallet_address.slice(2, 4).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-white font-medium text-sm">
-                {truncateAddress(post.wallet_address)}
-              </p>
-              <p className="text-gray-500 text-xs">
-                {formatRelativeTime(post.created_at)}
-              </p>
-            </div>
-          </div>
+          <PostAuthorDisplay 
+            walletAddress={post.wallet_address} 
+            createdAt={post.created_at} 
+          />
           
           {isOwner && (
             <button

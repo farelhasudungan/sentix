@@ -7,6 +7,7 @@ import { Home, Trophy, BarChart3, Bot, Settings, Bell, User, Wallet, LogOut, Mes
 import { useAccount, useDisconnect } from 'wagmi'
 import { useWalletModal } from '@/context/WalletModalContext'
 import { useNotifications } from '@/context/NotificationContext'
+import { useUserAlias } from '@/hooks/useUserAlias'
 
 const navItems = [
   { href: '/trade', label: 'Home', icon: Home },
@@ -28,6 +29,36 @@ function formatTimeAgo(date: Date): string {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString()
+}
+
+// User profile display component with alias support
+function UserProfileDisplay({ address, onDisconnect }: { address: string; onDisconnect: () => void }) {
+  const { displayName, isCustomAlias } = useUserAlias(address)
+  
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl border border-white/10" style={{ background: 'rgba(255,255,255,0.03)' }}>
+      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #22c55e, #10b981)', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
+        <User className="w-4 h-4 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p 
+          className="text-sm font-medium truncate"
+          style={{ color: isCustomAlias ? '#fbbf24' : '#fff' }}
+          title={address}
+        >
+          {displayName}
+        </p>
+        <p className="text-gray-500 text-xs">Connected</p>
+      </div>
+      <button
+        onClick={onDisconnect}
+        className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+        title="Disconnect"
+      >
+        <LogOut className="w-4 h-4" />
+      </button>
+    </div>
+  )
 }
 
 export function Sidebar() {
@@ -86,7 +117,7 @@ export function Sidebar() {
 
         {/* Bottom Section - Settings & Notifications */}
         <div className="p-4 space-y-1 border-t border-white/10">
-          <Link href="/trade#">
+          <Link href="/trade/settings">
             <div className="flex items-center gap-4 px-4 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-200">
               <Settings className="w-4 h-4" />
               <span className="text-xs font-medium">Settings</span>
@@ -197,24 +228,7 @@ export function Sidebar() {
         {/* User Profile / Wallet */}
         <div className="p-4 border-t border-white/10">
           {isConnected && address ? (
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-white/10" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #22c55e, #10b981)', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}>
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">
-                  {address.slice(0, 6)}...{address.slice(-4)}
-                </p>
-                <p className="text-gray-500 text-xs">Connected</p>
-              </div>
-              <button
-                onClick={() => disconnect()}
-                className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                title="Disconnect"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            <UserProfileDisplay address={address} onDisconnect={disconnect} />
           ) : (
             <button
               onClick={openWalletModal}

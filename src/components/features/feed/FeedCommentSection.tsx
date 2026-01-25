@@ -4,11 +4,27 @@ import React, { useState, useEffect } from 'react'
 import { Send, Trash2 } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import type { FeedComment } from '@/types'
-import { fetchComments, addComment, deleteComment, formatRelativeTime, truncateAddress } from '@/lib/api/feed'
+import { fetchComments, addComment, deleteComment, formatRelativeTime } from '@/lib/api/feed'
+import { useUserAlias, truncateAddress } from '@/hooks/useUserAlias'
 
 interface FeedCommentSectionProps {
   postId: string
   onCommentCountChange?: (count: number) => void
+}
+
+// Helper component for displaying comment author with alias support
+function CommentAuthorDisplay({ walletAddress }: { walletAddress: string }) {
+  const { displayName, isCustomAlias } = useUserAlias(walletAddress)
+  
+  return (
+    <span 
+      className="text-xs font-medium"
+      style={{ color: isCustomAlias ? '#fbbf24' : '#fff' }}
+      title={walletAddress}
+    >
+      {displayName || truncateAddress(walletAddress)}
+    </span>
+  )
 }
 
 export function FeedCommentSection({ postId, onCommentCountChange }: FeedCommentSectionProps) {
@@ -148,9 +164,7 @@ export function FeedCommentSection({ postId, onCommentCountChange }: FeedComment
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-white text-xs font-medium">
-                      {truncateAddress(comment.wallet_address)}
-                    </span>
+                    <CommentAuthorDisplay walletAddress={comment.wallet_address} />
                     <span className="text-gray-500 text-[10px]">
                       {formatRelativeTime(comment.created_at)}
                     </span>

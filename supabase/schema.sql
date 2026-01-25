@@ -199,3 +199,30 @@ CREATE POLICY "Allow service role full access to user_notifications" ON user_not
   FOR ALL TO service_role
   USING (true);
 
+-- ============================================
+-- USER ALIASES SYSTEM
+-- ============================================
+
+-- User aliases table (custom display names)
+CREATE TABLE IF NOT EXISTS user_aliases (
+  wallet_address TEXT PRIMARY KEY,
+  alias TEXT UNIQUE NOT NULL CHECK (length(alias) >= 3 AND length(alias) <= 20),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for case-insensitive alias lookups
+CREATE INDEX IF NOT EXISTS idx_user_aliases_alias ON user_aliases(LOWER(alias));
+
+-- Enable RLS for user_aliases
+ALTER TABLE user_aliases ENABLE ROW LEVEL SECURITY;
+
+-- Allow public read access to user aliases
+CREATE POLICY "Allow public read user_aliases" ON user_aliases
+  FOR SELECT TO anon, authenticated
+  USING (true);
+
+-- Allow service role full access to user aliases
+CREATE POLICY "Allow service role full access to user_aliases" ON user_aliases
+  FOR ALL TO service_role
+  USING (true);

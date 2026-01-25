@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Trophy, BarChart3, Bot, Wallet, User, LogOut, Search, Bell, MessageSquare, X, ExternalLink, CheckCircle, Trash2 } from 'lucide-react'
+import { Home, Trophy, BarChart3, Bot, Wallet, User, LogOut, Search, Bell, MessageSquare, X, ExternalLink, CheckCircle, Trash2, Settings } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useWalletModal } from '@/context/WalletModalContext'
 import { useNotifications } from '@/context/NotificationContext'
@@ -59,9 +59,9 @@ export function MobileNav() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-1">
-          <button className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5">
-            <Search className="w-5 h-5" />
-          </button>
+          <Link href="/trade/settings" className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+            <Settings className="w-5 h-5" />
+          </Link>
           
           {/* Notification Button */}
           <div className="relative">
