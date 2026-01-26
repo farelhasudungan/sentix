@@ -36,12 +36,11 @@ function calculateScore(
   tradeCount: number,
   streakDays: number
 ): number {
-  // Normalize values
   const normalizedPremium = Math.min(totalPremium / 1000, 100) // Max 100 points for $1000+ premium
   const profitRatio = totalPremium > 0 ? totalProfit / totalPremium : 0
-  const normalizedProfit = Math.max(-50, Math.min(profitRatio * 100, 100)) // Allow negative for losses
-  const normalizedTrades = Math.min(tradeCount * 5, 100) // 5 points per trade, max 100
-  const normalizedStreak = Math.min(streakDays * 10, 100) // 10 points per day, max 100
+  const normalizedProfit = Math.max(0, Math.min(profitRatio * 100, 100))
+  const normalizedTrades = Math.min(Math.sqrt(tradeCount) * 5, 100)
+  const normalizedStreak = Math.min(Math.sqrt(streakDays) * 10, 100)
 
   const score =
     normalizedPremium * SCORING_WEIGHTS.premiumPaid +
@@ -55,7 +54,7 @@ function calculateScore(
 /**
  * POST /api/tournaments/[id]/calculate-scores
  * Recalculate all scores for a tournament based on settled trades
- * This should be called periodically (cron job) or manually
+ * This called when leaderboard is viewed
  */
 export async function POST(
   request: NextRequest,
@@ -126,8 +125,9 @@ export async function POST(
         for (const trade of relevantTrades) {
           const decimals = trade.collateralDecimals || 6
           const premium = parseFloat(formatUnits(BigInt(trade.entryPremium), decimals))
-          const payout = trade.settlement 
-            ? parseFloat(formatUnits(BigInt(trade.settlement.payoutBuyer), decimals))
+          const payoutBuyerRaw = trade.settlement?.payoutBuyer
+          const payout = payoutBuyerRaw 
+            ? parseFloat(formatUnits(BigInt(payoutBuyerRaw), decimals))
             : 0
 
           totalPremium += premium
@@ -152,7 +152,7 @@ export async function POST(
           } else {
             const prevDate = new Date(sortedDates[i - 1])
             const currDate = new Date(sortedDates[i])
-            const diffDays = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24))
+            const diffDays = Math.floor((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 26))
             
             if (diffDays === 1) {
               currentStreak++

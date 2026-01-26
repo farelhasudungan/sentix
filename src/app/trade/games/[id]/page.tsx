@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Users, Clock, Crown, Trophy, Star, Loader2, ArrowLeft, Calendar, Gift } from 'lucide-react'
@@ -16,23 +16,32 @@ export default function TournamentDetailPage() {
   const { data: tournament, isLoading: tournamentLoading, error: tournamentError } = useTournament(tournamentId, address)
   const { data: leaderboard, isLoading: leaderboardLoading, refetch: refetchLeaderboard } = useLeaderboard(tournamentId)
   const joinMutation = useJoinTournament()
+  
+  // Track if we're calculating scores
+  const [calculatingScores, setCalculatingScores] = useState(true)
 
   // Recalculate scores from settled trades when viewing the tournament
   useEffect(() => {
     if (!tournamentId || !tournament) return
     
     // Only recalculate for live or recently ended tournaments
-    if (tournament.status === 'upcoming') return
+    if (tournament.status === 'upcoming') {
+      setCalculatingScores(false)
+      return
+    }
 
     const recalculateScores = async () => {
+      setCalculatingScores(true)
       try {
         await fetch(`/api/tournaments/${tournamentId}/calculate-scores`, {
           method: 'POST',
         })
         // Refetch leaderboard after recalculation
-        refetchLeaderboard()
+        await refetchLeaderboard()
       } catch (error) {
         console.error('Failed to recalculate scores:', error)
+      } finally {
+        setCalculatingScores(false)
       }
     }
 
@@ -290,9 +299,10 @@ export default function TournamentDetailPage() {
           )}
         </div>
 
-        {leaderboardLoading ? (
-          <div className="flex items-center justify-center py-8">
+        {leaderboardLoading || calculatingScores ? (
+          <div className="flex flex-col items-center justify-center py-8 gap-2">
             <Loader2 className="w-6 h-6 text-yellow-400 animate-spin" />
+            <span className="text-xs text-gray-500">{calculatingScores ? 'Updating scores...' : 'Loading leaderboard...'}</span>
           </div>
         ) : !leaderboard || leaderboard.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
