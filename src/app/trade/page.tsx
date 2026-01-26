@@ -15,7 +15,9 @@ import xrpIcon from '@/assets/icon/xrp.png'
 import { useQuery } from '@tanstack/react-query'
 import { fetchThetanutsQuotes } from '@/lib/api/quotes'
 import { useThetanutsTrade } from '@/hooks/useThetanutsTrade'
-import { getStrikeWidth, calculateMaxPayout, getStructureType, payoutAtPrice } from '@/lib/api/payouts'
+import { formatUnits } from 'viem'
+import { getStrikeWidth, calculateMaxPayout, getStructureType, payoutAtPrice, getOptimalProfitPrice } from '@/lib/api/payouts'
+import { STRIKE_DECIMALS } from '@/lib/constants'
 import { FilterBar } from '@/components/ui/FilterBar'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { OptionTypeModal } from '@/components/ui/OptionTypeModal'
@@ -356,11 +358,36 @@ function TradeContent() {
 
             {/* Stats Layout */}
             <div className="space-y-4 mb-6">
-              {/* Strike Price */}
-              <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">Strike Price</div>
-                <div className="text-2xl font-bold text-white">${currentOption.strike.toLocaleString()}</div>
-              </div>
+              {/* Strike Price(s) */}
+              {(() => {
+                const strikes = currentOption.raw.order.strikes;
+                const formattedStrikes = strikes.map(s => 
+                  parseFloat(formatUnits(BigInt(s), STRIKE_DECIMALS)).toLocaleString()
+                );
+                const isMultiLeg = strikes.length > 1;
+                
+                return (
+                  <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
+                      {isMultiLeg ? `Strike Prices (${getStructureType(strikes.length)})` : 'Strike Price'}
+                    </div>
+                    {isMultiLeg ? (
+                      <div className="flex flex-wrap items-center justify-center gap-2">
+                        {formattedStrikes.map((strike, i) => (
+                          <span key={i} className="inline-flex items-center">
+                            <span className="text-xl font-bold text-white">${strike}</span>
+                            {i < formattedStrikes.length - 1 && (
+                              <span className="text-gray-500 mx-2">→</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-2xl font-bold text-white">${currentOption.strike.toLocaleString()}</div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Expiry & APY */}
               <div className="grid grid-cols-2 gap-4">
@@ -434,20 +461,22 @@ function TradeContent() {
                 const numContracts = (parseFloat(investmentAmount) || 0) / currentOption.pricePerContract;
                 const structureType = getStructureType(currentOption.raw.order.strikes.length);
                 
-                // Calculate profit at 5% move from strike
+                // Calculate optimal profit based on structure type
                 const isCall = currentOption.type === 'CALL';
-                const price5Percent = isCall 
-                  ? currentOption.strike * 1.05 
-                  : currentOption.strike * 0.95;
+                const { price: optimalPrice, label: priceLabel } = getOptimalProfitPrice(
+                  currentOption.raw.order.strikes,
+                  isCall,
+                  currentOption.currentPrice
+                );
                 
-                // Calculate payout at 5% move using imported function
-                const payout5Percent = payoutAtPrice(
+                // Calculate payout at optimal price using imported function
+                const optimalPayout = payoutAtPrice(
                   currentOption.raw.order.strikes,
                   isCall,
                   numContracts,
-                  price5Percent
+                  optimalPrice
                 );
-                const potentialProfit = payout5Percent - (parseFloat(investmentAmount) || 0);
+                const potentialProfit = optimalPayout - (parseFloat(investmentAmount) || 0);
                 
                 return (
                   <div className="grid grid-cols-2 gap-3">
@@ -532,17 +561,19 @@ function TradeContent() {
         const maxLoss = investment
         const isCall = pendingTradeOption.type === 'CALL'
         
-        // Calculate potential profit at 5% move
-        const price5Percent = isCall 
-          ? pendingTradeOption.strike * 1.05 
-          : pendingTradeOption.strike * 0.95
-        const payout5Percent = payoutAtPrice(
+        // Calculate optimal profit based on structure type
+        const { price: optimalPrice, label: priceLabel } = getOptimalProfitPrice(
+          pendingTradeOption.raw.order.strikes,
+          isCall,
+          pendingTradeOption.currentPrice
+        );
+        const optimalPayout = payoutAtPrice(
           pendingTradeOption.raw.order.strikes,
           isCall,
           numContracts,
-          price5Percent
+          optimalPrice
         )
-        const profit5Percent = payout5Percent - investment
+        const potentialProfit = optimalPayout - investment
 
         return (
           <div 
@@ -576,10 +607,32 @@ function TradeContent() {
 
               {/* Trade Details */}
               <div className="p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400 text-sm">Strike Price</span>
-                  <span className="text-white font-medium">${pendingTradeOption.strike.toLocaleString()}</span>
-                </div>
+                {(() => {
+                  const strikes = pendingTradeOption.raw.order.strikes;
+                  const formattedStrikes = strikes.map(s => 
+                    parseFloat(formatUnits(BigInt(s), STRIKE_DECIMALS)).toLocaleString()
+                  );
+                  const isMultiLeg = strikes.length > 1;
+                  
+                  return (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-sm">
+                        {isMultiLeg ? 'Strike Prices' : 'Strike Price'}
+                      </span>
+                      {isMultiLeg ? (
+                        <span className="text-white font-medium">
+                          {formattedStrikes.map((s, i) => (
+                            <span key={i}>
+                              ${s}{i < formattedStrikes.length - 1 ? ' → ' : ''}
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="text-white font-medium">${pendingTradeOption.strike.toLocaleString()}</span>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400 text-sm">Your Investment</span>
                   <span className="text-white font-medium">{formatUSDC(investment)}</span>
@@ -601,8 +654,8 @@ function TradeContent() {
                   </div>
                   <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
                     <p className="text-green-400 text-[10px] uppercase mb-1">Potential Profit</p>
-                    <p className="text-green-400 font-bold text-lg">+{formatMoney(profit5Percent)}</p>
-                    <p className="text-green-400/60 text-[10px]">{((profit5Percent / investment) * 100).toFixed(0)}% return</p>
+                    <p className="text-green-400 font-bold text-lg">+{formatMoney(potentialProfit)}</p>
+                    <p className="text-green-400/60 text-[10px]">{((potentialProfit / investment) * 100).toFixed(0)}% return</p>
                   </div>
                 </div>
               </div>

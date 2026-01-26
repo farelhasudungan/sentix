@@ -130,3 +130,68 @@ export function getStructureType(strikeCount: number): string {
     default: return 'Unknown';
   }
 }
+
+/**
+ * Get optimal profit target price based on option structure
+ * For vanilla options: returns 5% move from strike
+ * For spreads: returns the upper/lower bound strike
+ * For butterflies: returns the middle strike
+ * For condors: returns the midpoint of the sweet spot
+ * @param {Array} strikes - Array of strikes (raw BigInt values)
+ * @param {boolean} isCall - Whether the option is a call
+ * @param {number} spotPrice - Current spot price (used for vanilla options fallback)
+ * @returns {{ price: number; label: string }} Optimal price and label describing the scenario
+ */
+export function getOptimalProfitPrice(
+  strikes: (bigint | number | string)[],
+  isCall: boolean,
+  spotPrice: number
+): { price: number; label: string } {
+  const K = strikes.map(s => parseFloat(formatUnits(BigInt(s), STRIKE_DECIMALS)));
+
+  // Vanilla options (1 strike) - use 5% move from strike
+  if (K.length === 1) {
+    const strike = K[0];
+    const price = isCall ? strike * 1.05 : strike * 0.95;
+    return { 
+      price, 
+      label: `at 5% ${isCall ? 'up' : 'down'}` 
+    };
+  }
+
+  // Spreads (2 strikes) - max profit at the boundary
+  if (K.length === 2) {
+    const [L, U] = K;
+    if (isCall) {
+      // Call spread: max profit when price >= upper strike
+      return { price: U, label: `at $${U.toLocaleString()}` };
+    } else {
+      // Put spread: max profit when price <= lower strike
+      return { price: L, label: `at $${L.toLocaleString()}` };
+    }
+  }
+
+  // Butterflies (3 strikes) - max profit at middle strike
+  if (K.length === 3) {
+    const middle = K[1];
+    return { 
+      price: middle, 
+      label: `at $${middle.toLocaleString()} (sweet spot)` 
+    };
+  }
+
+  // Condors (4 strikes) - max profit in the middle range
+  if (K.length === 4) {
+    const K2 = K[1];
+    const K3 = K[2];
+    const sweetSpot = (K2 + K3) / 2;
+    return { 
+      price: sweetSpot, 
+      label: `at $${sweetSpot.toLocaleString()} (sweet spot)` 
+    };
+  }
+
+  // Fallback
+  return { price: spotPrice, label: 'at current price' };
+}
+
