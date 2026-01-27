@@ -142,20 +142,22 @@ export default function GamesPage() {
               )}
 
               {/* Footer */}
-              <div className="flex items-center justify-between">
-                <div className="flex gap-4 text-xs text-gray-500">
-                  <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
-                    <Users className="w-3.5 h-3.5" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                  <span className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg whitespace-nowrap">
+                    <Users className="w-3 h-3 flex-shrink-0" />
                     {tournament.participant_count}
                   </span>
-                  <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-lg">
-                    <Clock className="w-3.5 h-3.5" />
-                    {tournament.status === 'live' 
-                      ? `Ends: ${formatTimeRemaining(tournament.end_date)}` 
-                      : tournament.status === 'upcoming'
-                      ? `Starts: ${formatTimeRemaining(tournament.start_date)}`
-                      : 'Ended'
-                    }
+                  <span className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg max-w-[150px] sm:max-w-none">
+                    <Clock className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">
+                      {tournament.status === 'live' 
+                        ? `${formatTimeRemaining(tournament.end_date)}` 
+                        : tournament.status === 'upcoming'
+                        ? `${formatTimeRemaining(tournament.start_date)}`
+                        : 'Ended'
+                      }
+                    </span>
                   </span>
                 </div>
                 

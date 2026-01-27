@@ -58,16 +58,16 @@ export function SocialAnalysisCard({ post }: SocialAnalysisCardProps) {
     >
       {/* Header: News Source */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* News Source Avatar */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
             📰
           </div>
           
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-white">{post.account_display_name}</span>
-              <span className="text-gray-500 text-sm">{post.account_username}</span>
+              <span className="font-semibold text-white text-sm truncate">{post.account_display_name}</span>
+              <span className="text-gray-500 text-xs hidden sm:inline truncate">{post.account_username}</span>
             </div>
             <span className="text-gray-500 text-xs">{formatRelativeTime(post.posted_at)}</span>
           </div>

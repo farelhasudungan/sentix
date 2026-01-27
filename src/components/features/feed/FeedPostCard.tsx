@@ -159,34 +159,34 @@ export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-4 pt-3 border-t border-white/5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 pt-3 border-t border-white/5">
           <button
             onClick={handleLike}
             disabled={!address || isLiking}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all ${
               isLiked 
                 ? 'text-red-400 bg-red-500/10' 
                 : 'text-gray-400 hover:text-red-400 hover:bg-red-500/10'
             } ${(!address || isLiking) ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-            <span className="text-sm">{likeCount}</span>
+            <span className="text-xs sm:text-sm">{likeCount}</span>
           </button>
 
           <button
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
           >
             <MessageCircle className="w-4 h-4" />
-            <span className="text-sm">{commentCount}</span>
+            <span className="text-xs sm:text-sm">{commentCount}</span>
           </button>
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-green-400 hover:bg-green-500/10 transition-all relative"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-green-400 hover:bg-green-500/10 transition-all relative"
           >
             <Share2 className="w-4 h-4" />
-            <span className="text-sm">Share</span>
+            <span className="text-xs sm:text-sm hidden sm:inline">Share</span>
             
             {showShareToast && (
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-green-500 text-white text-xs rounded whitespace-nowrap">
@@ -200,11 +200,11 @@ export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps
               const encodedContent = encodeURIComponent(post.content)
               router.push(`/trade/agent?analyze=${encodedContent}`)
             }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-all ml-auto"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-all ml-auto"
             title="Analyze with AI"
           >
             <Sparkles className="w-4 h-4" />
-            <span className="text-sm">Analyze</span>
+            <span className="text-xs sm:text-sm hidden sm:inline">Analyze</span>
           </button>
         </div>
 

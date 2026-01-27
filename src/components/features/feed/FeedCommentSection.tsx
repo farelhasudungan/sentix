@@ -108,12 +108,12 @@ export function FeedCommentSection({ postId, onCommentCountChange }: FeedComment
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Write a comment..."
             maxLength={280}
-            className="flex-1 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 transition-colors"
+            className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500/50 transition-colors"
           />
           <button
             type="submit"
             disabled={!newComment.trim() || isSubmitting}
-            className="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="flex-shrink-0 px-3 py-2 rounded-xl bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <Send className="w-4 h-4" />
           </button>

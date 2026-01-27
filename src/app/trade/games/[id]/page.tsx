@@ -178,22 +178,24 @@ export default function TournamentDetailPage() {
         )}
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-3 bg-white/5 rounded-xl border border-white/10">
-            <div className="text-xl font-bold text-yellow-400">{tournament.prize_pool}</div>
-            <div className="text-xs text-gray-500 uppercase">Prize Pool</div>
-          </div>
-          <div className="text-center p-3 bg-white/5 rounded-xl border border-white/10">
-            <div className="flex items-center justify-center gap-1 text-white">
-              <Users className="w-4 h-4" />
-              <span className="font-bold">{tournament.participant_count}</span>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+          <div className="text-center p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10">
+            <div className="h-6 sm:h-7 flex items-center justify-center">
+              <span className="text-lg sm:text-xl font-bold text-yellow-400 truncate">{tournament.prize_pool}</span>
             </div>
-            <div className="text-xs text-gray-500 uppercase">Participants</div>
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase mt-1">Prize</div>
           </div>
-          <div className="text-center p-3 bg-white/5 rounded-xl border border-white/10">
-            <div className="flex items-center justify-center gap-1 text-white">
-              <Clock className="w-4 h-4" />
-              <span className="font-bold text-sm">
+          <div className="text-center p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10">
+            <div className="h-6 sm:h-7 flex items-center justify-center gap-1 text-white">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="font-bold text-sm sm:text-base">{tournament.participant_count}</span>
+            </div>
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase mt-1">Players</div>
+          </div>
+          <div className="text-center p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10">
+            <div className="h-6 sm:h-7 flex items-center justify-center gap-1 text-white">
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span className="font-bold text-xs sm:text-sm truncate">
                 {tournament.status === 'live' 
                   ? formatTimeRemaining(tournament.end_date)
                   : tournament.status === 'upcoming'
@@ -202,8 +204,8 @@ export default function TournamentDetailPage() {
                 }
               </span>
             </div>
-            <div className="text-xs text-gray-500 uppercase">
-              {tournament.status === 'live' ? 'Ends In' : tournament.status === 'upcoming' ? 'Starts In' : 'Status'}
+            <div className="text-[10px] sm:text-xs text-gray-500 uppercase mt-1">
+              {tournament.status === 'live' ? 'Left' : tournament.status === 'upcoming' ? 'Starts' : 'Status'}
             </div>
           </div>
         </div>
