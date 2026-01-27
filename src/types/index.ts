@@ -201,3 +201,46 @@ export interface FeedLike {
   wallet_address: string;
   created_at: string;
 }
+
+// Social Analysis Types (AI-powered Twitter/X analysis)
+export type SentimentType = 'bullish' | 'bearish' | 'neutral';
+
+export interface WhitelistedAccount {
+  id: string;
+  username: string;
+  twitter_id: string | null;
+  display_name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SuggestedTrade {
+  asset: string;
+  type: 'CALL' | 'PUT';
+  strike: number;
+  expiry: string;
+  expiryTimestamp: number;
+  premium: number;
+  pricePerContract: number;
+  currentPrice: number;
+  leverage: number;
+}
+
+export interface SocialAnalysisPost {
+  id: string;
+  tweet_id: string;
+  account_username: string;
+  account_display_name: string;
+  content: string;
+  tweet_url: string;
+  posted_at: string;
+  assets_mentioned: string[];
+  sentiment: SentimentType;
+  sentiment_confidence: number;
+  ai_summary: string;
+  suggested_trade: SuggestedTrade | null;
+  analyzed_at: string;
+  created_at: string;
+}
