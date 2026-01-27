@@ -130,7 +130,7 @@ export async function POST(req: Request) {
 
     // 2. Call OpenAI with enhanced system prompt (no markdown)
     const runner = await openai.chat.completions.create({
-      model: "openai/gpt-oss-120b:free",
+      model: 'openai/gpt-4o-mini',
       messages: [
         { 
           role: "system", 

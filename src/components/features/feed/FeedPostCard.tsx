@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Heart, MessageCircle, Share2, Trash2, X, AlertTriangle } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Trash2, X, AlertTriangle, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import type { FeedPost } from '@/types'
 import { TradeAttachmentCard } from './TradeAttachmentCard'
@@ -50,6 +51,7 @@ function PostAuthorDisplay({ walletAddress, createdAt }: { walletAddress: string
 
 export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps) {
   const { address } = useAccount()
+  const router = useRouter()
   const [isLiked, setIsLiked] = useState(post.user_liked || false)
   const [likeCount, setLikeCount] = useState(post.like_count)
   const [showComments, setShowComments] = useState(false)
@@ -191,6 +193,18 @@ export function FeedPostCard({ post, onLikeChange, onDelete }: FeedPostCardProps
                 Link copied!
               </div>
             )}
+          </button>
+
+          <button
+            onClick={() => {
+              const encodedContent = encodeURIComponent(post.content)
+              router.push(`/trade/agent?analyze=${encodedContent}`)
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 transition-all ml-auto"
+            title="Analyze with AI"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm">Analyze</span>
           </button>
         </div>
 

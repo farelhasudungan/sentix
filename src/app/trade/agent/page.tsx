@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Send, TrendingUp, Clock, Activity, Bot, Sparkles } from 'lucide-react'
 import { useChat } from '@/hooks/useChat'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
@@ -90,9 +91,11 @@ const MiniOptionCard = ({ option }: { option: Option }) => (
 )
 
 const AIAgent = () => {
+  const searchParams = useSearchParams()
   const { messages, isLoading, sendMessage } = useChat()
   const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [hasAutoAnalyzed, setHasAutoAnalyzed] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -101,6 +104,16 @@ const AIAgent = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Auto-analyze content from query param (from Feed "Analyze" button)
+  useEffect(() => {
+    const analyzeContent = searchParams.get('analyze')
+    if (analyzeContent && !hasAutoAnalyzed && !isLoading && messages.length === 0) {
+      setHasAutoAnalyzed(true)
+      const prompt = `Analyze this post and suggest a trading strategy with specific CALL or PUT recommendation:\n\n"${analyzeContent}"`
+      sendMessage(prompt)
+    }
+  }, [searchParams, hasAutoAnalyzed, isLoading, messages.length, sendMessage])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
