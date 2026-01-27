@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Send, TrendingUp, Clock, Activity, Bot, Sparkles } from 'lucide-react'
@@ -259,4 +259,25 @@ const AIAgent = () => {
   )
 }
 
-export default AIAgent
+// Loading fallback for Suspense
+function AgentLoading() {
+  return (
+    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: 'linear-gradient(to bottom right, #3b82f6, #06b6d4)' }}>
+          <Bot className="w-8 h-8 text-white animate-pulse" />
+        </div>
+        <p className="text-gray-400">Loading AI Buddy...</p>
+      </div>
+    </div>
+  )
+}
+
+// Wrap with Suspense for useSearchParams
+export default function AIAgentPage() {
+  return (
+    <Suspense fallback={<AgentLoading />}>
+      <AIAgent />
+    </Suspense>
+  )
+}
