@@ -143,6 +143,23 @@ IMPORTANT RULES:
 4. When users ask for trades, ALWAYS pay attention to their expiry preferences (e.g., "3 days", "a week").
 5. Extract the exact number of days they want for expiry and pass it to the find_trade function.
 
+OPTION TYPE RULES:
+- If user does NOT mention a specific strategy, default to VANILLA options (simple CALL or PUT).
+- Only suggest advanced strategies (spread, butterfly, iron condor) if user explicitly asks for them.
+- CALL = bullish (expects price to go up)
+- PUT = bearish (expects price to go down)
+
+STRIKE PRICE RULES:
+- If user does NOT specify a strike price, recommend the option with strike CLOSEST to current asset price.
+- This provides balanced risk/reward for beginners.
+
+RECOMMENDATION EXPLANATION:
+When suggesting a trade, ALWAYS explain WHY it suits the user:
+- Connect to their stated market view (bullish/bearish)
+- Explain the risk/reward profile
+- Mention the time horizon match
+- If analyzing a post, reference key points from the post
+
 Examples of expiry extraction:
 - "I want a 3 day trade" → minExpiryDays: 3, maxExpiryDays: 5
 - "around a week" → minExpiryDays: 5, maxExpiryDays: 9
@@ -194,25 +211,49 @@ Examples of expiry extraction:
           return days >= minExpiry && days <= maxExpiry;
         });
 
-        // Sort by closest match to user's preferred expiry (if specified)
-        if (args.minExpiryDays) {
-          const targetDays = args.minExpiryDays;
-          filtered.sort((a, b) => {
+        // Sort by closest strike to current price first (for balanced risk/reward)
+        // Then by expiry if user specified
+        filtered.sort((a, b) => {
+          // Calculate distance of strike from current price (as percentage)
+          const aStrikeDist = Math.abs(a.strike - a.currentPrice) / a.currentPrice;
+          const bStrikeDist = Math.abs(b.strike - b.currentPrice) / b.currentPrice;
+          
+          // If user specified expiry preference, weight that too
+          if (args.minExpiryDays) {
+            const targetDays = args.minExpiryDays;
             const aDays = parseExpiryDays(a.expiry);
             const bDays = parseExpiryDays(b.expiry);
-            return Math.abs(aDays - targetDays) - Math.abs(bDays - targetDays);
-          });
-        }
+            const aExpiryDist = Math.abs(aDays - targetDays) / targetDays;
+            const bExpiryDist = Math.abs(bDays - targetDays) / targetDays;
+            
+            // Combine both factors (strike distance + expiry distance)
+            return (aStrikeDist + aExpiryDist * 0.5) - (bStrikeDist + bExpiryDist * 0.5);
+          }
+          
+          // Otherwise just sort by closest strike
+          return aStrikeDist - bStrikeDist;
+        });
 
         // Pick the best matching trade
         const bestTrade = filtered.length > 0 ? filtered[0] : null;
 
         if (bestTrade) {
-          const expiryInfo = args.minExpiryDays ? ` with ~${parseExpiryDays(bestTrade.expiry)} days expiry` : '';
-          const payoutInfo = calculatePayoutInfo(bestTrade);
+          const expiryDays = parseExpiryDays(bestTrade.expiry);
+          const strikeDistance = ((bestTrade.strike - bestTrade.currentPrice) / bestTrade.currentPrice * 100).toFixed(1);
+          const isOTM = (bestTrade.type === 'CALL' && bestTrade.strike > bestTrade.currentPrice) ||
+                        (bestTrade.type === 'PUT' && bestTrade.strike < bestTrade.currentPrice);
+          
+          // Build detailed explanation
+          let reasoning = `\n\n💡 Why this trade suits you:\n`;
+          reasoning += `• ${bestTrade.type === 'CALL' ? '📈 Bullish play' : '📉 Bearish play'}: Perfect for your ${args.isBullish ? 'optimistic' : 'cautious'} market view\n`;
+          reasoning += `• Strike at $${bestTrade.strike.toLocaleString()} (${Math.abs(parseFloat(strikeDistance))}% ${isOTM ? 'out-of-money' : 'in-the-money'})\n`;
+          reasoning += `• Current ${bestTrade.asset} price: $${bestTrade.currentPrice.toLocaleString()}\n`;
+          reasoning += `• Expiry in ${expiryDays} days - ${expiryDays <= 3 ? 'quick, high-leverage play' : 'balanced time for price movement'}\n`;
+          reasoning += `• Max risk: Limited to premium paid\n`;
+          reasoning += `• Potential return: ${bestTrade.apy}x leverage if price moves in your favor`;
           
           return NextResponse.json({
-            response: `I found a great trade for you! 🚀\n\nBased on your interest in ${args.asset || 'Crypto'} ${targetType ? `(${targetType})` : ''}${expiryInfo}:${payoutInfo}`,
+            response: `I found a great trade for you! 🚀${reasoning}`,
             recommendedTrade: bestTrade
           } as ChatResponse);
         } else {
