@@ -99,6 +99,7 @@ export function formatPosition(position: UserPosition) {
   const numContracts = parseFloat(formatUnits(BigInt(position.numContracts), decimals));
   
   const expiryDate = new Date(position.expiryTimestamp * 1000);
+  const createdDate = new Date(position.entryTimestamp * 1000);
   const now = new Date();
   const isExpired = expiryDate < now;
   const diffTime = Math.abs(expiryDate.getTime() - now.getTime());
@@ -109,6 +110,15 @@ export function formatPosition(position: UserPosition) {
     payout = parseFloat(formatUnits(BigInt(position.settlement.payoutBuyer), decimals));
   }
   
+  const status = position.status === 'open' 
+    ? (isExpired ? 'EXPIRED' : 'ACTIVE')
+    : (payout >= premium ? 'WON' : 'LOST');
+
+  let expiresIn = '';
+  if (status === 'ACTIVE') expiresIn = `${diffDays}d`;
+  else if (status === 'EXPIRED') expiresIn = 'Expired';
+  else expiresIn = 'Settled';
+
   return {
     id: position.address,
     asset: position.underlyingAsset,
@@ -116,9 +126,10 @@ export function formatPosition(position: UserPosition) {
     strike: strikes[0] || 0,
     premium,
     numContracts,
+    createdDate: createdDate.toLocaleDateString(),
     expiry: expiryDate.toLocaleDateString(),
-    expiresIn: isExpired ? 'Expired' : `${diffDays}d`,
-    status: position.status === 'open' ? 'ACTIVE' : (payout > 0 ? 'WON' : 'LOST'),
+    expiresIn,
+    status,
     pnl: payout - premium,
     pnlPercent: premium > 0 ? ((payout - premium) / premium) * 100 : 0,
     entryTxHash: position.entryTxHash,

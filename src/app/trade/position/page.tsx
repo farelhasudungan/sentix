@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { TrendingUp, TrendingDown, Clock, AlertCircle, CheckCircle, XCircle, Wallet, RefreshCw, BarChart3, ExternalLink, Share2, X } from 'lucide-react'
+import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { useAccount } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { fetchUserPositions, fetchUserHistory, formatPosition } from '@/lib/api/positions'
@@ -43,16 +44,17 @@ export default function PositionPage() {
   // Format and combine positions
   const formattedOpen = openPositions.map(formatPosition)
   const formattedHistory = historyPositions.map(formatPosition)
-  const allPositions = [...formattedOpen, ...formattedHistory]
+  const allPositions = [...formattedOpen, ...formattedHistory].sort((a, b) => b.raw.entryTimestamp - a.raw.entryTimestamp)
 
   const filteredPositions = allPositions.filter(pos => {
-    if (filter === 'active') return pos.status === 'ACTIVE'
+    if (filter === 'active') return pos.status === 'ACTIVE' || pos.status === 'EXPIRED'
     if (filter === 'closed') return pos.status === 'WON' || pos.status === 'LOST'
     return true
   })
 
   const totalPnL = allPositions.reduce((sum, pos) => sum + pos.pnl, 0)
   const activeCount = allPositions.filter(p => p.status === 'ACTIVE').length
+  const expiredCount = allPositions.filter(p => p.status === 'EXPIRED').length
   const wonCount = allPositions.filter(p => p.status === 'WON').length
   const lostCount = allPositions.filter(p => p.status === 'LOST').length
 
@@ -146,7 +148,7 @@ export default function PositionPage() {
       </div>
 
       {/* Portfolio Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <div className={`backdrop-blur-sm border rounded-xl p-4 text-center ${totalPnL >= 0 ? 'border-green-500/30' : 'border-red-500/30'}`} style={{ background: 'rgba(26,26,26,0.8)' }}>
           <div className={`text-xl font-bold ${totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(2)}
@@ -156,6 +158,10 @@ export default function PositionPage() {
         <div className="backdrop-blur-sm border border-blue-500/30 rounded-xl p-4 text-center" style={{ background: 'rgba(26,26,26,0.8)' }}>
           <div className="text-xl font-bold text-blue-400">{activeCount}</div>
           <div className="text-[10px] text-gray-500 uppercase mt-1">Active</div>
+        </div>
+        <div className="backdrop-blur-sm border border-gray-500/30 rounded-xl p-4 text-center" style={{ background: 'rgba(26,26,26,0.8)' }}>
+          <div className="text-xl font-bold text-gray-400">{expiredCount}</div>
+          <div className="text-[10px] text-gray-500 uppercase mt-1">Expired</div>
         </div>
         <div className="backdrop-blur-sm border border-green-500/30 rounded-xl p-4 text-center" style={{ background: 'rgba(26,26,26,0.8)' }}>
           <div className="text-xl font-bold text-green-400">{wonCount}</div>
@@ -212,7 +218,9 @@ export default function PositionPage() {
                 className={`bg-[#1a1a2e]/50 backdrop-blur-sm border rounded-2xl p-5 transition-all hover:-translate-y-1 ${
                   position.status === 'ACTIVE' 
                     ? position.type === 'CALL' ? 'border-green-500/30' : 'border-red-500/30'
-                    : position.status === 'WON' ? 'border-green-500/20' : 'border-white/10'
+                    : position.status === 'EXPIRED'
+                      ? 'border-gray-500/30'
+                      : position.status === 'WON' ? 'border-green-500/20' : 'border-white/10'
                 }`}
               >
                 {/* Header */}
@@ -231,9 +239,18 @@ export default function PositionPage() {
                       <div className={`font-semibold ${position.type === 'CALL' ? 'text-green-400' : 'text-red-400'}`}>
                         {position.type} ${position.strike.toLocaleString()}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {position.expiresIn}
+
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {position.status === 'ACTIVE' ? (
+                            <CountdownTimer expiryTimestamp={position.raw.expiryTimestamp} />
+                          ) : (
+                            <span>{position.expiresIn}</span>
+                          )}
+                        </div>
+                        <span>•</span>
+                        <span>Opened: {position.createdDate}</span>
                       </div>
                     </div>
                   </div>
@@ -241,10 +258,12 @@ export default function PositionPage() {
                   {/* Status Badge */}
                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
                     position.status === 'ACTIVE' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                    position.status === 'EXPIRED' ? 'bg-gray-500/20 text-gray-400 border border-gray-500/30' :
                     position.status === 'WON' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
                     'bg-red-500/20 text-red-400 border border-red-500/30'
                   }`}>
                     {position.status === 'ACTIVE' && <AlertCircle className="w-3.5 h-3.5" />}
+                    {position.status === 'EXPIRED' && <Clock className="w-3.5 h-3.5" />}
                     {position.status === 'WON' && <CheckCircle className="w-3.5 h-3.5" />}
                     {position.status === 'LOST' && <XCircle className="w-3.5 h-3.5" />}
                     {position.status}
@@ -263,7 +282,7 @@ export default function PositionPage() {
                     )}
                     <div>
                       <div className={`font-bold text-lg ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {position.pnl >= 0 ? '+' : ''}{position.pnl.toFixed(2)} USD
+                        {position.pnl >= 0 ? '+' : ''}{position.pnl.toFixed(6)} USD
                       </div>
                       <div className={`text-xs ${position.pnl >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
                         {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(1)}%
@@ -271,7 +290,7 @@ export default function PositionPage() {
                     </div>
                   </div>
                   <div className="text-right text-xs text-gray-500">
-                    <div>Premium: ${position.premium.toFixed(2)}</div>
+                    <div>Premium: ${position.premium.toFixed(6)}</div>
                     <div>Strike: ${position.strike.toLocaleString()}</div>
                   </div>
                 </div>
