@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, Trophy, BarChart3, Bot, Settings, Bell, User, Wallet, LogOut, MessageSquare, X, ExternalLink, CheckCircle, Trash2 } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
@@ -81,12 +82,10 @@ export function Sidebar() {
       <aside className="hidden md:flex flex-col fixed left-4 top-4 bottom-4 w-60 backdrop-blur-xl border border-white/10 rounded-2xl z-50 overflow-visible" style={{ background: 'rgba(255,255,255,0.05)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 0 rgba(255,255,255,0.1)' }}>
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
-          <Link href="/trade" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)', boxShadow: '0 4px 14px rgba(251,191,36,0.3)' }}>
-              <span className="text-lg">⭐</span>
-            </div>
-            <span className="font-bold text-white text-xl tracking-wide">Sentix</span>
-          </Link>
+          <Link href="/" className="flex items-center gap-3 mb-8 px-2">
+        <Image src="/Sentix.svg" alt="Sentix Logo" width={40} height={40} className="rounded-lg" />
+        <span className="font-bold text-2xl text-white tracking-tight">Sentix</span>
+      </Link>
         </div>
 
         {/* Main Navigation */}

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Home, Trophy, BarChart3, Bot, Wallet, User, LogOut, Search, Bell, MessageSquare, X, ExternalLink, CheckCircle, Trash2, Settings } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
@@ -50,11 +51,9 @@ export function MobileNav() {
       {/* Top Navbar - Floating Glass Effect */}
       <header className="md:hidden fixed top-3 left-3 right-3 h-14 backdrop-blur-xl border border-white/10 rounded-2xl z-50 px-4 flex items-center justify-between overflow-visible" style={{ background: 'rgba(255,255,255,0.05)', boxShadow: '0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)' }}>
         {/* Logo */}
-        <Link href="/trade" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)', boxShadow: '0 4px 14px rgba(251,191,36,0.3)' }}>
-            <span className="text-sm">⭐</span>
-          </div>
-          <span className="font-bold text-white text-base tracking-wide">Sentix</span>
+        <Link href="/" className="flex items-center gap-3">
+          <Image src="/Sentix.svg" alt="Sentix Logo" width={32} height={32} className="rounded-lg" />
+          <span className="font-bold text-xl text-white">Sentix</span>
         </Link>
 
         {/* Right Actions */}

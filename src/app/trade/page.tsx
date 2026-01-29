@@ -23,6 +23,7 @@ import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { OptionTypeModal } from '@/components/ui/OptionTypeModal'
 import { ProfitDetailModal } from '@/components/ui/ProfitDetailModal'
 import { SwipeButtons } from '@/components/features/trade/SwipeButtons'
+import { TutorialModal } from '@/components/features/trade/TutorialModal'
 import { useNotifications } from '@/context/NotificationContext'
 import type { Option } from '@/types'
 
@@ -136,6 +137,16 @@ function TradeContent() {
   const [investmentAmount, setInvestmentAmount] = useState<string>('')
   
   // Modal states
+  const [showTutorial, setShowTutorial] = useState(false)
+  
+  // Check persisted tutorial state on mount
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('optixel_tutorial_seen')
+    if (!hasSeenTutorial) {
+      setShowTutorial(true)
+    }
+  }, [])
+
   const [isOptionTypeModalOpen, setIsOptionTypeModalOpen] = useState(false)
   const [isProfitModalOpen, setIsProfitModalOpen] = useState(false)
   const [showTradeConfirm, setShowTradeConfirm] = useState(false)
@@ -697,6 +708,12 @@ function TradeContent() {
           </div>
         )
       })()}
+
+      {/* Tutorial Modal */}
+      <TutorialModal 
+        isOpen={showTutorial} 
+        onClose={() => setShowTutorial(false)} 
+      />
 
       {/* Success Notification Toast */}
       {successNotification && (

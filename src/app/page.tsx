@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronRight, Users, Trophy, Sparkles, Zap, Target, Crown } from 'lucide-react'
 
 const Homepage = () => {
@@ -28,18 +29,12 @@ const Homepage = () => {
       borderColor: 'border-amber-500/30',
     },
     {
-      title: 'Track & Earn',
-      description: 'Monitor your trades with beautiful P&L tracking.',
-      icon: '📊',
+      title: 'Social Feed',
+      description: 'Share your winning trades to the feed and get likes!',
+      icon: '💬',
       color: 'from-purple-500/20 to-pink-500/10',
       borderColor: 'border-purple-500/30',
     },
-  ]
-
-  const stats = [
-    { label: 'Active Players', value: '10K+', icon: Users },
-    { label: 'Total Trades', value: '50K+', icon: Target },
-    { label: 'Prize Pool', value: '$25K', icon: Trophy },
   ]
 
   return (
@@ -60,9 +55,7 @@ const Homepage = () => {
           
           <div className="relative z-10 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm overflow-hidden flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)' }}>
-                <span className="text-base">⭐</span>
-              </div>
+              <Image src="/Sentix.svg" alt="Sentix Logo" width={40} height={40} className="rounded-lg" />
               <span className="font-semibold text-lg text-white pixel-font">Sentix</span>
             </Link>
 
@@ -118,8 +111,8 @@ const Homepage = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-            Make your home in a world of unlimited trading adventure. 
-            Master options and compete with friends. Build your portfolio.
+            Make your home in a world of unlimited trading options.
+            Master options and compete with friends.
           </p>
 
           {/* CTA Buttons*/}
@@ -143,28 +136,15 @@ const Homepage = () => {
               </div>
             </Link>
           </div>
-
-          {/* Stats Row */}
-          <div className="flex items-center justify-center gap-8 md:gap-16">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <stat.icon className="w-5 h-5 text-amber-400" />
-                  <span className="text-2xl md:text-3xl font-bold text-white">{stat.value}</span>
-                </div>
-                <span className="text-xs text-gray-500 uppercase tracking-wide">{stat.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
       {/* Banner */}
       <div className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)' }}>
         <div className="flex animate-marquee whitespace-nowrap">
-          {[...Array(10)].map((_, i) => (
-            <span key={i} className="mx-8 text-black font-bold text-sm flex items-center gap-2">
-              ⭐ Welcome to Sentix • Trade Options Like a Game • Join Tournaments • Win Prizes
+          {[...Array(15)].map((_, i) => (
+            <span key={i} className="mx-16 text-black font-bold text-sm flex items-center gap-2">
+              Welcome to Sentix
             </span>
           ))}
         </div>
@@ -228,7 +208,7 @@ const Homepage = () => {
             {[
               { step: '1', title: 'Connect Wallet', desc: 'Link your crypto wallet to start trading', color: 'bg-green-500' },
               { step: '2', title: 'Swipe Options', desc: 'Browse and swipe to place your trades', color: 'bg-blue-500' },
-              { step: '3', title: 'Win Rewards', desc: 'Earn profits and climb the leaderboard', color: 'bg-amber-500' },
+              { step: '3', title: 'Win Rewards', desc: 'Earn profits and share your trade', color: 'bg-amber-500' },
             ].map((item, idx) => (
               <div key={idx} className="text-center">
                 <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4`} style={{ boxShadow: '0 4px 0 rgba(0,0,0,0.3)' }}>
@@ -247,19 +227,19 @@ const Homepage = () => {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(168,85,247,0.2), rgba(168,85,247,0.05))', border: '2px solid rgba(168,85,247,0.3)' }}>
-              <h3 className="text-xl font-bold text-white mb-2">10K+ Players</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Trade with Others</h3>
               <div className="text-4xl mb-3">👥</div>
-              <p className="text-sm text-gray-400">Join one of the largest trading game communities!</p>
+              <p className="text-sm text-gray-400">Join one of the trading option communities!</p>
             </div>
             <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(59,130,246,0.2), rgba(59,130,246,0.05))', border: '2px solid rgba(59,130,246,0.3)' }}>
-              <h3 className="text-xl font-bold text-white mb-2">Weekly Tournaments</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Win Tournaments</h3>
               <div className="text-4xl mb-3">🏆</div>
-              <p className="text-sm text-gray-400">Compete every week for amazing prizes!</p>
+              <p className="text-sm text-gray-400">Compete every Tournament for amazing prizes!</p>
             </div>
             <div className="p-6 rounded-2xl" style={{ background: 'linear-gradient(to bottom right, rgba(236,72,153,0.2), rgba(236,72,153,0.05))', border: '2px solid rgba(236,72,153,0.3)' }}>
               <h3 className="text-xl font-bold text-white mb-2">Daily Updates</h3>
               <div className="text-4xl mb-3">🚀</div>
-              <p className="text-sm text-gray-400">New features and markets added regularly!</p>
+              <p className="text-sm text-gray-400">New feeds and markets added daily!</p>
             </div>
           </div>
         </div>
@@ -275,7 +255,7 @@ const Homepage = () => {
               <div className="text-6xl mb-6">🎮</div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Ready to Start Trading?</h2>
               <p className="text-gray-400 mb-8 max-w-lg mx-auto">
-                Join thousands of traders who are already using Sentix to trade options the fun way.
+                Join traders who are already using Sentix to trade options the fun way.
               </p>
               <Link href="/trade">
                 <div className="pixel-button-gold-lg inline-block">
@@ -290,9 +270,9 @@ const Homepage = () => {
       {/* Ticker Banner */}
       <div className="relative overflow-hidden py-4" style={{ background: 'linear-gradient(to right, #fbbf24, #f59e0b)' }}>
         <div className="flex animate-marquee whitespace-nowrap">
-          {[...Array(10)].map((_, i) => (
-            <span key={i} className="mx-8 text-black font-bold text-sm flex items-center gap-2">
-              ⭐ Powered by Thetanuts Finance • Trade with Confidence • Learn with AI • Compete to Win
+          {[...Array(15)].map((_, i) => (
+            <span key={i} className="mx-16 text-black font-bold text-sm flex items-center gap-2">
+              <Image src="/Sentix.svg" alt="Sentix" width={16} height={16} className="rounded-sm" /> Powered by <Image src="/Thetanuts.svg" alt="Thetanuts Finance" width={100} height={20} className="h-4 w-auto" /> 
             </span>
           ))}
         </div>
@@ -303,9 +283,7 @@ const Homepage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #fbbf24, #f59e0b)' }}>
-                <span className="text-lg">⭐</span>
-              </div>
+              <Image src="/Sentix.svg" alt="Sentix Logo" width={40} height={40} className="rounded-lg" />
               <span className="font-bold text-xl text-white">Sentix</span>
             </div>
             
@@ -318,11 +296,11 @@ const Homepage = () => {
           </div>
           
           <div className="text-center border-t border-white/10 pt-8">
-            <p className="text-gray-500 text-sm mb-2">
-              Built with ❤️ and powered by <span className="text-amber-400 font-semibold">Thetanuts Finance</span>
+            <p className="text-gray-500 text-sm flex items-center justify-center gap-2 mb-2">
+              Built with ❤️ and powered by <Image src="/ThetanutsWhite.svg" alt="Thetanuts Finance" width={120} height={24} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity" />
             </p>
             <p className="text-gray-600 text-xs">
-              © 2025 Sentix. All Rights Reserved.
+              © 2026 Sentix. All Rights Reserved.
             </p>
           </div>
         </div>
