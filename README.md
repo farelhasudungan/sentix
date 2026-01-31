@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sentix
+
+A gamified options trading platform built with Next.js, featuring swipeable trade cards, AI-powered trading guidance, social feed, and competitive tournaments.
+
+## Features
+
+- **Swipeable Trade Cards** - Tinder-style interface for quick options trading decisions
+- **AI Trading Agent** - Get personalized trade recommendations powered by OpenAI
+- **Social Feed** - Share trades, post ideas, and engage with the community
+- **Tournaments** - Compete with other traders in leaderboard-based competitions
+- **Wallet Integration** - Connect via WalletConnect for seamless Web3 experience
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **State Management**: TanStack React Query
+- **Database**: Supabase
+- **Wallet**: wagmi + viem + WalletConnect
+- **AI**: OpenAI / OpenRouter SDK
+- **Analytics**: Vercel Analytics
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/                # API routes
+│   │   ├── chat/           # AI chat endpoints
+│   │   ├── feed/           # Social feed & analysis
+│   │   ├── notifications/  # User notifications
+│   │   ├── quotes/         # Options quotes
+│   │   ├── tournaments/    # Tournament management
+│   │   └── user/           # User management
+│   └── trade/              # Trading pages
+│       ├── agent/          # AI trading agent
+│       ├── feed/           # Social feed
+│       ├── games/          # Gamification features
+│       ├── position/       # Position management
+│       └── settings/       # User settings
+├── components/
+│   ├── features/           # Feature-specific components
+│   │   ├── advanced/       # Advanced trading components
+│   │   ├── feed/           # Feed components
+│   │   └── trade/          # Trading components
+│   ├── layout/             # Layout components
+│   └── ui/                 # Reusable UI components
+├── context/                # React contexts
+├── hooks/                  # Custom React hooks
+│   ├── useChat.tsx         # AI chat hook
+│   ├── useThetanutsTrade.ts # Trading execution hook
+│   ├── useTournaments.ts   # Tournament data hook
+│   └── useUserAlias.ts     # User alias management
+├── lib/                    # Utilities and configurations
+│   ├── api/                # API client functions
+│   ├── config/             # App configuration
+│   ├── contracts/          # Smart contract ABIs
+│   ├── constants.ts        # App constants
+│   └── supabase.ts         # Supabase client
+├── styles/                 # Global styles
+└── types/                  # TypeScript type definitions
+
+supabase/
+└── migrations/             # Database migrations
+
+public/                     # Static assets
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+
+- npm
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   git clone <repository-url>
+   cd sentix
+   ```
 
-## Learn More
+2. Install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Set up environment variables:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   Configure the following variables:
+   - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+   - `OPENAI_API_KEY` - OpenAI API key for AI features
+   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - WalletConnect project ID
 
-## Deploy on Vercel
+4. Run the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Scripts
+
+| Command         | Description              |
+| --------------- | ------------------------ |
+| `npm run dev`   | Start development server |
+| `npm run build` | Build for production     |
+| `npm run start` | Start production server  |
+| `npm run lint`  | Run ESLint               |
+
+## License
+
+All rights reserved.
