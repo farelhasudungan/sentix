@@ -142,6 +142,53 @@ export function getStructureType(strikeCount: number): string {
  * @param {number} spotPrice - Current spot price (used for vanilla options fallback)
  * @returns {{ price: number; label: string }} Optimal price and label describing the scenario
  */
+/**
+ * Calculate break-even price for an option.
+ * Derived from payoutAtPrice so it always agrees with the payoff the UI shows.
+ * Butterflies and condors break even twice; the crossing nearest spot wins.
+ * @param {Array} strikes - Array of strikes
+ * @param {boolean} isCall - Whether the option is a call
+ * @param {number} pricePerContract - Premium paid per contract
+ * @param {number} spotPrice - Current spot price, used to pick between two break-evens
+ * @returns {number} Break-even price
+ */
+export function getBreakEven(
+  strikes: (bigint | number | string)[],
+  isCall: boolean,
+  pricePerContract: number,
+  spotPrice: number
+): number {
+  if (pricePerContract <= 0) return spotPrice;
+
+  const K = strikes.map(s => parseFloat(formatUnits(BigInt(s), STRIKE_DECIMALS)));
+  const margin = (S: number) =>
+    payoutAtPrice(strikes, isCall, 1, S) - pricePerContract;
+
+  // Payoff is piecewise linear with kinks at the strikes, so the zero crossing
+  // can be interpolated inside any segment bounded by strikes (plus spot).
+  const points = [...new Set([
+    Math.min(...K) * 0.5,
+    ...K,
+    spotPrice,
+    Math.max(...K) * 1.5,
+  ])].sort((a, b) => a - b);
+
+  const crossings: number[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i];
+    const b = points[i + 1];
+    const fa = margin(a);
+    const fb = margin(b);
+    if (fa === 0) crossings.push(a);
+    else if (fa * fb < 0) crossings.push(a + ((b - a) * fa) / (fa - fb));
+  }
+  if (crossings.length === 0) return spotPrice;
+
+  return crossings.reduce((best, c) =>
+    Math.abs(c - spotPrice) < Math.abs(best - spotPrice) ? c : best
+  );
+}
+
 export function getOptimalProfitPrice(
   strikes: (bigint | number | string)[],
   isCall: boolean,
