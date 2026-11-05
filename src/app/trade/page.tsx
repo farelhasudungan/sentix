@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import { Clock, DollarSign, TrendingUp, Activity, AlertTriangle, X, ArrowUp, ArrowDown, ExternalLink, CheckCircle } from 'lucide-react'
+import { Clock, DollarSign, TrendingUp, Activity, AlertTriangle, X, ArrowUp, ArrowDown, ExternalLink, CheckCircle, Layers, LayoutGrid } from 'lucide-react'
 
 // Import coin icons
 import btcIcon from '@/assets/icon/bitcoin.png'
@@ -18,12 +18,15 @@ import { useThetanutsTrade } from '@/hooks/useThetanutsTrade'
 import { formatUnits } from 'viem'
 import { getStrikeWidth, calculateMaxPayout, getStructureType, payoutAtPrice, getOptimalProfitPrice } from '@/lib/api/payouts'
 import { STRIKE_DECIMALS } from '@/lib/constants'
-import { FilterBar } from '@/components/ui/FilterBar'
 import { CountdownTimer } from '@/components/ui/CountdownTimer'
 import { OptionTypeModal } from '@/components/ui/OptionTypeModal'
 import { ProfitDetailModal } from '@/components/ui/ProfitDetailModal'
 import { SwipeButtons } from '@/components/features/trade/SwipeButtons'
 import { TutorialModal } from '@/components/features/trade/TutorialModal'
+import AdvancedOptionsTable from '@/components/features/trade/AdvancedOptionsTable'
+import AdvancedTradePanel from '@/components/features/trade/AdvancedTradePanel'
+import { TradeFilters } from '@/components/features/trade/TradeFilters'
+import type { StructureFilterType } from '@/components/features/trade/TradeFilters'
 import { useNotifications } from '@/context/NotificationContext'
 import type { Option } from '@/types'
 
@@ -35,6 +38,19 @@ const coinIcons: Record<string, typeof btcIcon> = {
   SOL: solIcon,
   BNB: bnbIcon,
   XRP: xrpIcon,
+}
+
+// Expiry distance buckets (1 / 2 / 3+ days to option expiry)
+const EXPIRY_OPTIONS = [
+  { value: 'ALL', label: 'All' },
+  { value: '1', label: '1 day' },
+  { value: '2', label: '2 days' },
+  { value: '3', label: '3+ days' },
+]
+
+const expiryBucket = (o: Option): string => {
+  const days = Math.ceil((o.expiryTimestamp * 1000 - Date.now()) / 86400000)
+  return days <= 1 ? '1' : days === 2 ? '2' : '3'
 }
 
 // Wrapper component with Suspense for useSearchParams
@@ -53,6 +69,14 @@ function TradeContent() {
   const [positions, setPositions] = useState<Option[]>([])
   const [filter, setFilter] = useState('ALL')
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'CALL' | 'PUT'>('ALL')
+  const [structureFilter, setStructureFilter] = useState<StructureFilterType>('ALL')
+  const [expiryFilter, setExpiryFilter] = useState('ALL')
+  const [viewMode, setViewMode] = useState<'basic' | 'advanced'>('basic')
+  const [selectedAdvancedOption, setSelectedAdvancedOption] = useState<Option | null>(null)
+  // Restore saved approval preference (guarded: localStorage is client-only)
+  const [exactApproval, setExactApproval] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('max_exact_approval') === 'true'
+  )
   
   // Track if we've already applied URL params
   const appliedParamsRef = React.useRef<string | null>(null)
@@ -71,12 +95,47 @@ function TradeContent() {
   const signature = searchParams.get('signature')
   const paramsKey = `${urlFilter}-${urlType}-${urlStrike}-${signature}`
 
-  // Derived state for filtered options (now includes type filter)
-  const filteredOptions = optionsData.filter((option) => {
+  // Derived state for filtered options (includes asset, type, structure, and expiry filter)
+  const filteredOptions = useMemo(() => optionsData.filter((option) => {
     const matchesAsset = filter === 'ALL' || option.asset === filter
     const matchesType = typeFilter === 'ALL' || option.type === typeFilter
-    return matchesAsset && matchesType
-  })
+    const optionStructure = getStructureType(option.raw.order.strikes.length)
+    const matchesStructure = structureFilter === 'ALL' || optionStructure === structureFilter
+    const matchesExpiry = expiryFilter === 'ALL' || expiryBucket(option) === expiryFilter
+    return matchesAsset && matchesType && matchesStructure && matchesExpiry
+  }), [optionsData, filter, typeFilter, structureFilter, expiryFilter])
+
+  // Count options per structure type (for badge counts, respects active filters)
+  const structureCounts = useMemo(() => {
+    const counts: Record<StructureFilterType, number> = { ALL: 0, Vanilla: 0, Spread: 0, Butterfly: 0, Condor: 0 }
+    optionsData.forEach((option) => {
+      const matchesAsset = filter === 'ALL' || option.asset === filter
+      const matchesType = typeFilter === 'ALL' || option.type === typeFilter
+      const matchesExpiry = expiryFilter === 'ALL' || expiryBucket(option) === expiryFilter
+      if (matchesAsset && matchesType && matchesExpiry) {
+        counts.ALL++
+        const struct = getStructureType(option.raw.order.strikes.length) as StructureFilterType
+        if (struct in counts) counts[struct]++
+      }
+    })
+    return counts
+  }, [optionsData, filter, typeFilter, expiryFilter])
+
+  // Count options per expiry bucket (for badge counts, respects active filters)
+  const expiryCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: 0, '1': 0, '2': 0, '3': 0 }
+    optionsData.forEach((option) => {
+      const matchesAsset = filter === 'ALL' || option.asset === filter
+      const matchesType = typeFilter === 'ALL' || option.type === typeFilter
+      const optionStructure = getStructureType(option.raw.order.strikes.length)
+      const matchesStructure = structureFilter === 'ALL' || optionStructure === structureFilter
+      if (matchesAsset && matchesType && matchesStructure) {
+        counts.ALL++
+        counts[expiryBucket(option)]++
+      }
+    })
+    return counts
+  }, [optionsData, filter, typeFilter, structureFilter])
 
   const currentOption = filteredOptions[currentIndex]
 
@@ -141,7 +200,7 @@ function TradeContent() {
   
   // Check persisted tutorial state on mount
   useEffect(() => {
-    const hasSeenTutorial = localStorage.getItem('optixel_tutorial_seen')
+    const hasSeenTutorial = localStorage.getItem('sentix_tutorial_seen')
     if (!hasSeenTutorial) {
       setShowTutorial(true)
     }
@@ -227,7 +286,7 @@ function TradeContent() {
     
     console.log('Trading option:', freshOption.asset, freshOption.type, freshOption.strike);
     
-    const result = await executeTrade(freshOption, investmentAmount)
+    const result = await executeTrade(freshOption, investmentAmount, { exactApproval })
     if (result && result.status === 'connecting_wallet') {
       setSwipeDirection(null)
       setPendingTradeOption(null)
@@ -244,6 +303,9 @@ function TradeContent() {
       })
       // Auto-hide after 8 seconds
       setTimeout(() => setSuccessNotification(null), 8000)
+
+      // Close the advanced trade panel so stale quotes can't be re-used
+      setSelectedAdvancedOption(null)
       
       // Save to notification history
       addNotification({
@@ -272,49 +334,105 @@ function TradeContent() {
     setPendingTradeOption(null)
   }
 
+  // Select an option in advanced mode
+  const openTradeFor = (option: Option) => {
+    setSelectedAdvancedOption(option)
+  }
+
+  // Trade from advanced panel
+  const handleAdvancedTrade = async (amount: string) => {
+    if (!selectedAdvancedOption) return
+    setInvestmentAmount(amount)
+    setPendingTradeOption(selectedAdvancedOption)
+    setShowTradeConfirm(true)
+  }
+
   return (
-    <div className="max-w-lg mx-auto">
-      {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Your fortune awaits</h1>
-        {isLoading && <p className="text-xs text-yellow-400 animate-pulse">Scanning chain...</p>}
-        {error && <p className="text-xs text-red-400">Error fetching data</p>}
-      </div>
-
-      {/* Filter Bar */}
-      <FilterBar 
-        options={coins} 
-        selected={filter} 
-        onSelect={(newFilter) => {
-          setFilter(newFilter);
-          setCurrentIndex(0);
-        }} 
-      />
-
-      {/* Type Filter */}
-      <div className="flex justify-center gap-2 mb-4">
-        {(['ALL', 'CALL', 'PUT'] as const).map((type) => (
+    <div className="w-full">
+      {/* View Mode Toggle (Basic swipe / Advanced options chain) */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="text-xs">
+          {isLoading && <span className="text-yellow-400 animate-pulse">Scanning chain...</span>}
+          {error && <span className="text-red-400">Error fetching data</span>}
+        </div>
+        <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <button
-            key={type}
-            onClick={() => {
-              setTypeFilter(type);
-              setCurrentIndex(0);
-            }}
-            className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              typeFilter === type
-                ? type === 'CALL'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : type === 'PUT'
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
-            }`}
+            onClick={() => setViewMode('basic')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'basic' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+            style={viewMode === 'basic'
+              ? { background: 'linear-gradient(to right, #fbbf24, #d97706)' }
+              : { background: 'transparent' }}
           >
-            {type}
+            <Layers className="w-3.5 h-3.5" /> Basic
           </button>
-        ))}
+          <button
+            onClick={() => setViewMode('advanced')}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === 'advanced' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+            style={viewMode === 'advanced'
+              ? { background: 'linear-gradient(to right, #fbbf24, #d97706)' }
+              : { background: 'transparent' }}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" /> Advanced
+          </button>
+        </div>
       </div>
 
+      {/* Filters stay as a side rail; the card/table centers inside the content
+          area to its right (mx-auto on the content container), not on the screen. */}
+      <div className="lg:flex lg:gap-6 lg:items-start">
+        <TradeFilters
+          coins={coins}
+          asset={filter}
+          onAssetChange={(v) => { setFilter(v); setCurrentIndex(0) }}
+          typeFilter={typeFilter}
+          onTypeChange={(v) => { setTypeFilter(v); setCurrentIndex(0) }}
+          structureFilter={structureFilter}
+          onStructureChange={(v) => { setStructureFilter(v); setCurrentIndex(0) }}
+          structureCounts={structureCounts}
+          showExpiry={viewMode === 'advanced'}
+          expiryOptions={EXPIRY_OPTIONS}
+          expiryFilter={expiryFilter}
+          onExpiryChange={(v) => { setExpiryFilter(v); setCurrentIndex(0) }}
+          expiryCounts={expiryCounts}
+        />
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0 w-full">
+          {/* keep the card/table centered (not stretched) on desktop */}
+          <div className={viewMode === 'basic' ? 'w-full max-w-2xl mx-auto' : 'w-full max-w-6xl mx-auto'}>
+
+      {/* Advanced Mode: full options chain table */}
+      {viewMode === 'advanced' ? (
+        <>
+          <AdvancedOptionsTable
+            key={`${filter}-${typeFilter}-${structureFilter}-${expiryFilter}`}
+            options={filteredOptions}
+            selected={selectedAdvancedOption}
+            onSelect={openTradeFor}
+          />
+          {selectedAdvancedOption &&
+          filteredOptions.some(
+            (o) =>
+              o.raw.signature === selectedAdvancedOption.raw.signature &&
+              o.raw.optionBookAddress === selectedAdvancedOption.raw.optionBookAddress
+          ) && (
+            <AdvancedTradePanel
+              option={selectedAdvancedOption}
+              onTrade={handleAdvancedTrade}
+              onClose={() => setSelectedAdvancedOption(null)}
+              isPending={isPending}
+              isConfirming={isConfirming}
+              exactApproval={exactApproval}
+              onToggleApproval={() => {
+                const next = !exactApproval
+                setExactApproval(next)
+                localStorage.setItem('max_exact_approval', String(next))
+              }}
+            />
+          )}
+        </>
+      ) : (
+      <>
       {/* Swipe Card */}
       {currentOption ? (
         <>
@@ -326,7 +444,7 @@ function TradeContent() {
           </div>
 
           <div 
-            className={`relative border rounded-2xl p-6 transition-all duration-300 ${
+            className={`relative border rounded-2xl p-6 sm:p-8 transition-all duration-300 ${
               swipeDirection === 'left' 
                 ? 'transform -translate-x-full opacity-0 border-red-500' 
                 : swipeDirection === 'right' 
@@ -340,13 +458,13 @@ function TradeContent() {
             {/* Asset Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 flex items-center justify-center rounded-xl p-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <div className="w-16 h-16 flex items-center justify-center rounded-xl p-2" style={{ background: 'rgba(255,255,255,0.05)' }}>
                   {coinIcons[currentOption.asset] ? (
                     <Image 
                       src={coinIcons[currentOption.asset]} 
                       alt={currentOption.asset} 
-                      width={48} 
-                      height={48}
+                      width={56} 
+                      height={56}
                       className="object-contain"
                     />
                   ) : (
@@ -354,7 +472,7 @@ function TradeContent() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{currentOption.asset}</h2>
+                  <h2 className="text-3xl font-bold text-white">{currentOption.asset}</h2>
                 </div>
               </div>
               {/* CALL/PUT Badge */}
@@ -410,12 +528,36 @@ function TradeContent() {
                     {currentOption.expiry} <CountdownTimer expiryTimestamp={currentOption.expiryTimestamp} />
                   </div>
                 </div>
-                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
-                  <div className="text-green-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
-                    <TrendingUp className="w-3 h-3" /> Leverage
-                  </div>
-                  <div className="text-lg font-bold text-green-400">{currentOption.apy}x</div>
-                </div>
+                {(() => {
+                  const strikesCount = currentOption.raw.order.strikes.length;
+                  const isMultiLeg = strikesCount > 1;
+                  
+                  if (isMultiLeg) {
+                    // Multi-leg: show Multiply = maxPayoutPerContract / pricePerContract
+                    const strikeWidth = getStrikeWidth(currentOption.raw.order.strikes);
+                    const multiply = currentOption.pricePerContract > 0 
+                      ? strikeWidth / currentOption.pricePerContract 
+                      : 0;
+                    return (
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-3 text-center">
+                        <div className="text-purple-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
+                          <TrendingUp className="w-3 h-3" /> Multiply
+                        </div>
+                        <div className="text-lg font-bold text-purple-400">{multiply.toFixed(2)}x</div>
+                      </div>
+                    );
+                  } else {
+                    // Vanilla: show Leverage
+                    return (
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center">
+                        <div className="text-green-400 text-xs mb-1 flex items-center justify-center gap-1 uppercase">
+                          <TrendingUp className="w-3 h-3" /> Leverage
+                        </div>
+                        <div className="text-lg font-bold text-green-400">{currentOption.apy}x</div>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
 
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
@@ -532,18 +674,34 @@ function TradeContent() {
         <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(26,26,26,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="text-4xl mb-4">😴</div>
           <h2 className="text-lg font-bold text-gray-400 mb-2">NO CARDS FOUND</h2>
-          <p className="text-sm text-gray-500">Try selecting a different asset filter.</p>
+          <p className="text-sm text-gray-500 mb-4">Try adjusting your asset, type, or structure filters.</p>
+          <button
+            onClick={() => {
+              setFilter('ALL');
+              setTypeFilter('ALL');
+              setStructureFilter('ALL');
+              setCurrentIndex(0);
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 transition-all"
+          >
+            Reset All Filters
+          </button>
         </div>
+      )}
+      </>
       )}
 
       {/* Swipe Buttons */}
-      {currentOption && (
+      {viewMode === 'basic' && currentOption && (
         <SwipeButtons 
           onSwipeLeft={() => handleSwipe('left')}
           onSwipeRight={() => handleSwipe('right')}
           disabled={isPending || isConfirming || parseFloat(investmentAmount) > currentOption.premium || parseFloat(investmentAmount) <= 0}
         />
       )}
+          </div>
+        </div>
+      </div>
 
       {/* Option Type Modal */}
       {currentOption && (
@@ -682,6 +840,29 @@ function TradeContent() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Approval Preference */}
+              <div className="px-4 pb-2">
+                <label className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-white/5 transition-colors" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <input
+                    type="checkbox"
+                    checked={exactApproval}
+                    onChange={(e) => {
+                      setExactApproval(e.target.checked)
+                      localStorage.setItem('max_exact_approval', String(e.target.checked))
+                    }}
+                    className="w-4 h-4 accent-amber-500"
+                  />
+                  <div>
+                    <span className="text-sm text-gray-200 font-medium">Approve single trade only</span>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {exactApproval
+                        ? 'Only the exact premium is approved. You may need to approve again for future trades.'
+                        : 'Up to $1000 is approved to avoid an approval transaction on every trade.'}
+                    </p>
+                  </div>
+                </label>
               </div>
 
               {/* Actions */}
