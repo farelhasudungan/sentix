@@ -75,7 +75,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
   const handleNext = () => {
     if (isLastStep) {
       if (dontShowAgain) {
-        localStorage.setItem('optixel_tutorial_seen', 'true');
+        localStorage.setItem('sentix_tutorial_seen', 'true');
       }
       onClose();
     } else {
