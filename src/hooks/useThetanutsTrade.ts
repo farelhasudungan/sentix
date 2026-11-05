@@ -8,6 +8,8 @@ import { useWalletModal } from '@/context/WalletModalContext'
 import { REFERRER_ADDRESS, USDC_ADDRESS, BASE_CHAIN_ID } from '@/lib/constants'
 import type { Option } from '@/types'
 
+const APPROVAL_LIMIT = BigInt(1000_000000) // 1000 USDC (6 decimals)
+
 // Helper function to record trade in active tournaments
 async function recordTournamentTrade(
   walletAddress: string, 
@@ -111,7 +113,7 @@ export function useThetanutsTrade() {
     }
   }
 
-  const executeTrade = async (currentOption: Option, investmentAmount: string) => {
+  const executeTrade = async (currentOption: Option, investmentAmount: string, opts?: { exactApproval?: boolean }) => {
     const amount = parseFloat(investmentAmount) || 0;
     
     // Validate amount - must be positive
@@ -151,9 +153,13 @@ export function useThetanutsTrade() {
     const currentAllowance = await checkAllowance(optionBookAddress);
     
     if (currentAllowance < amountInUsdcUnits) {
-      // Need to request approval
-      console.log(`Insufficient allowance (${currentAllowance.toString()}), requesting approval for ${amountInUsdcUnits.toString()}`);
-      const approvalHash = await requestApproval(optionBookAddress, amountInUsdcUnits);
+      // Need to request approval: exact amount, or pad up to $1000 to avoid an
+      // approval txn on every order.
+      const approvalAmount = opts?.exactApproval
+        ? amountInUsdcUnits
+        : amountInUsdcUnits > APPROVAL_LIMIT ? amountInUsdcUnits : APPROVAL_LIMIT;
+      console.log(`Insufficient allowance (${currentAllowance.toString()}), requesting approval for ${approvalAmount.toString()}`);
+      const approvalHash = await requestApproval(optionBookAddress, approvalAmount);
       if (!approvalHash) {
         return { status: 'error', error: 'Failed to approve USDC' };
       }
